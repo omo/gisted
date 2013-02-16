@@ -175,6 +175,8 @@ class Gist(object):
 
 
 class Auth(object):
+    BASE_URI = "http://gisted.in"
+
     @classmethod
     def make(cls, session):
         return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), session)
@@ -202,7 +204,7 @@ class Auth(object):
         req = urllib2.Request(post_url, post_data, headers={"Accept": "application/json"})
         resp = json.load(self.open(req))
         self._session["token"] = resp["access_token"]
-        self.redirect_uri = args["redirect_uri"]
+        self.redirect_uri = args["redirect_uri"].replace(self.BASE_URI, "")
 
     @property
     def canary(self):
@@ -213,5 +215,5 @@ class Auth(object):
     def redirect_url_for(self, requested_uri):
         params = { "c": self.client_id, 
                    "s": self.canary,
-                   "u": urllib.quote(requested_uri, "") }
+                   "u": urllib.quote(urlparse.urljoin(self.BASE_URI, requested_uri), "") }
         return "https://github.com/login/oauth/authorize?scope=gist&client_id={c}&state={s}&redirect_uri={u}".format(**params)
