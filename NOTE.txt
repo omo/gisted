@@ -22,9 +22,11 @@ TODO:
  + user-based request support
  + Stub index page
  - end-to-end (post the url -> scrape and upload -> redirect)
+ - canary
  - styling
  - cookie encryption
-
+ - unsupported url
+ - fail case
 ----
 
  - favicon

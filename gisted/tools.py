@@ -117,11 +117,11 @@ class Uploader(GithubClient):
 
         return json.dumps(body_dict)
 
-    def _open(self, req):
+    def open(self, req):
         return urllib2.urlopen(req)
 
     def upload(self, source_url, title, text):
-        resp = self._open(self.build_request("/gists", data=self._make_body(source_url, title, text)))
+        resp = self.open(self.build_request("/gists", data=self._make_body(source_url, title, text)))
         self.response = json.load(resp)
         return self.response
     
@@ -130,7 +130,7 @@ class Uploader(GithubClient):
         m = re.search("https://api\\.github\\.com/gists/(.*)", self.response["url"])
         return m.group(1)
 
-
+# FIXME: Extractor and Downloader should use same model, This class could serve that use.
 class Post(object):
     def __init__(self, gist_id, source_url, title, paragraphs):
         self.gist_id = gist_id
@@ -184,6 +184,31 @@ class Downloader(GithubClient):
         body = self._get_raw_body(id) if id != "testshow" else codecs.open(conf.data_path("hello-post.md"), encoding="utf-8").read()
         return Post.make(id, body)
 
+
+class Paster(object):
+    
+    extractor_class = Extractor
+    uploader_class = Uploader
+
+    @classmethod
+    def make(cls, token=None):
+        return cls(token)
+
+    def __init__(self, token):
+        self.up = self.uploader_class.make(token)
+
+    def open(self, req):
+        return urllib2.urlopen(req)
+
+    def paste_from(self, source_url):
+        # FIXME: should reject unsupported sites
+        source = self.open(source_url)
+        extractor = self.extractor_class(source.read())
+        return self.up.upload(source_url, extractor.title, extractor.transcript_text)
+        
+    @property
+    def created_id(self):
+        return self.up.created_id
 
 class Auth(object):
     BACK_URI = "http://gisted.in/logback"

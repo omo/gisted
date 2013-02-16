@@ -10,6 +10,11 @@
 <h1>Gisted</h1>
 {% if (auth.authenticated) %}
 Authenticated
+<form action="/" method="POST">
+   <input type="hidden" name="canary" value="{{ auth.canary }}" />
+   <input type="text" name="u" value="" placeholder="URL"/>
+   <input type="submit" name="submit" value="Gist!" />
+</form>
 {% else %}
 Wild
 {% endif %}

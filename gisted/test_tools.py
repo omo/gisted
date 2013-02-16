@@ -7,6 +7,7 @@ import base64
 import urllib2
 import urlparse
 import json
+import types
 import gisted
 import gisted.conf as conf
 
@@ -45,7 +46,7 @@ class UploaderTest(unittest.TestCase):
     def test_hello(self):
         fake_result_url = "https://api.github.com/gists/xxxx"
         class TestingUploader(gisted.Uploader):
-            def _open(self, req):
+            def open(self, req):
                 self._req = req
                 return StringIO.StringIO(json.dumps({ "url": fake_result_url }))
 
@@ -112,3 +113,28 @@ class AuthTest(unittest.TestCase):
         auth = TestAuth.make({})
         auth.did_come_back({ "code": "mycode", "state": auth.canary })
 
+
+class PasterTest(unittest.TestCase):
+    def test_hello(self):
+        def fake_open(req):
+            u = req if isinstance(req, types.StringType) else req.get_full_url()
+            if "http://www.ted.com/" in u:
+                return fetch(u)
+            if "https://api.github.com/gists" in u:
+                self.assertIsNotNone(req.get_data())
+                return open(conf.data_path("hello-gist.json"))
+            return None
+
+        class TestingUploader(gisted.Uploader):
+            def open(self, req):
+                return fake_open(req)
+
+        class TestingPaster(gisted.Paster):
+            uploader_class = TestingUploader
+
+            def open(self, req):
+                return fake_open(req)
+
+        target = TestingPaster.make("fake_token")
+        target.paste_from("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
+        self.assertEquals(target.created_id, "73062b6d882439cfbf14")
