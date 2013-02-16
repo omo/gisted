@@ -24,10 +24,10 @@ def show(id):
 
 @app.route('/login')
 def login():
-    return f.redirect(tools.Auth.make(f.session).redirect_url_for("/"))
+    return f.redirect(tools.Auth.make(f.session).redirect_url)
 
 @app.route('/logback')
 def logback():
     auth = tools.Auth.make(f.session)
     auth.did_come_back(f.request.args)
-    return f.redirect(auth.redirect_uri)
+    return f.redirect("/")
