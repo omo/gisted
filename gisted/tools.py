@@ -24,6 +24,62 @@ class NotFound(Exception):
         super(NotFound, self).__init__(message)  
 
 
+TRANSCRIPT_TEMPLSTE = u"""
+
+ * Source: {url}
+ * Paster: http://gisted.in/
+
+----
+
+{title}
+{title_deco}
+
+{text}
+"""
+
+class Post(object):
+    def __init__(self, gist_id, source_url, title, paragraphs):
+        self.gist_id = gist_id
+        self.source_url = source_url
+        self.title = title
+        self.paragraphs = paragraphs
+
+    @property
+    def filename(self):
+        stripped = re.sub("\\|.*$", "", self.title)
+        base = re.sub("(^[^\\w+])|([^\\w+]$)", "", re.sub("[^\\w]+", "-", stripped)).lower() 
+        if not base:
+            base = "transcript"
+        return base + ".md"
+
+    @property
+    def source_hostname(self):
+        return urlparse.urlparse(self.source_url).hostname
+
+    @classmethod
+    def parse(cls, gist_id, raw_body):
+        head, body = raw_body.split("----")
+        m = re.search("\* +Source: *(.*)\n", head)
+        if not m:
+            raise NotFound("Couldn't see the original URL.")
+        source = m.group(1).strip()
+        m = re.search("([^=]*)(=+)(.*)", body, re.S)
+        if not m:
+            raise NotFound("Couldn't see the title.")
+        title = m.group(1).strip()
+        remaining = m.group(3).strip()
+        paras = re.split("\n\n+", remaining)
+        return Post(gist_id, source, title, paras)
+
+    @classmethod
+    def make(cls, source, title, text):
+        return cls(None, source, title, text)
+
+    def to_markdown(self):
+        return TRANSCRIPT_TEMPLSTE.format(url=self.source_url, title=self.title, title_deco="="*len(self.title), text=self.paragraphs)
+
+
+# FIXME: Should be fetcher
 class Extractor(object):
     def __init__(self, html):
         self._html = html
@@ -53,18 +109,9 @@ class Extractor(object):
     def transcript_text(self):
         return "\n\n".join(self.transcript_paragraphs)
 
+    def make_post(self, source):
+        return Post.make(source, self.title, self.transcript_text)
 
-TRANSCRIPT_HEADER_TEMPLSTE = """
-
- * Source: {url}
- * Paster: http://gisted.in/
-
-----
-
-{title}
-{title_deco}
-
-"""
 
 class GithubClient(object):
     BASE_URI = "https://api.github.com"
@@ -92,26 +139,14 @@ class Uploader(GithubClient):
     def __init__(self, client_id, client_secret, token=None):
         super(Uploader, self).__init__(client_id, client_secret, token)
 
-    def _make_filename(self, filename):
-        stripped = re.sub("\\|.*$", "", filename)
-        base = re.sub("(^[^\\w+])|([^\\w+]$)", "", re.sub("[^\\w]+", "-", stripped)).lower() 
-        if not base:
-            base = "transcript"
-        return base + ".md"
 
-    def _format_content(self, url, title, text):
-        header = TRANSCRIPT_HEADER_TEMPLSTE.format(url=url, title=title, title_deco="="*len(title))
-        return header + text
-
-    def _make_body(self, url, title, text):
-        content = self._format_content(url, title, text)
-        filename = self._make_filename(title)
+    def _make_body(self, post):
         # See http://developer.github.com/v3/gists/ for the API detail
         body_dict = {
-            "description": "Gisted: " + title,
+            "description": "Gisted: " + post.title,
             "public": True,
             "files": { 
-                filename: content
+                post.filename: post.to_markdown()
             }
         }
 
@@ -120,8 +155,8 @@ class Uploader(GithubClient):
     def open(self, req):
         return urllib2.urlopen(req)
 
-    def upload(self, source_url, title, text):
-        resp = self.open(self.build_request("/gists", data=self._make_body(source_url, title, text)))
+    def upload(self, post):
+        resp = self.open(self.build_request("/gists", data=self._make_body(post)))
         self.response = json.load(resp)
         return self.response
     
@@ -129,33 +164,6 @@ class Uploader(GithubClient):
     def created_id(self):
         m = re.search("https://api\\.github\\.com/gists/(.*)", self.response["url"])
         return m.group(1)
-
-# FIXME: Extractor and Downloader should use same model, This class could serve that use.
-class Post(object):
-    def __init__(self, gist_id, source_url, title, paragraphs):
-        self.gist_id = gist_id
-        self.source_url = source_url
-        self.title = title
-        self.paragraphs = paragraphs
-
-    @property
-    def source_hostname(self):
-        return urlparse.urlparse(self.source_url).hostname
-
-    @classmethod
-    def make(cls, gist_id, raw_body):
-        head, body = raw_body.split("----")
-        m = re.search("\* +Source: *(.*)\n", head)
-        if not m:
-            raise NotFound("Couldn't see the original URL.")
-        source = m.group(1).strip()
-        m = re.search("([^=]*)(=+)(.*)", body, re.S)
-        if not m:
-            raise NotFound("Couldn't see the title.")
-        title = m.group(1).strip()
-        remaining = m.group(3).strip()
-        paras = re.split("\n\n+", remaining)
-        return Post(gist_id, source, title, paras)
 
         
 class Downloader(GithubClient):
@@ -182,7 +190,7 @@ class Downloader(GithubClient):
         
     def get(self, id):
         body = self._get_raw_body(id) if id != "testshow" else codecs.open(conf.data_path("hello-post.md"), encoding="utf-8").read()
-        return Post.make(id, body)
+        return Post.parse(id, body)
 
 
 class Paster(object):
@@ -204,7 +212,7 @@ class Paster(object):
         # FIXME: should reject unsupported sites
         source = self.open(source_url)
         extractor = self.extractor_class(source.read())
-        return self.up.upload(source_url, extractor.title, extractor.transcript_text)
+        return self.up.upload(extractor.make_post(source_url))
         
     @property
     def created_id(self):

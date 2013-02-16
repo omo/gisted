@@ -51,7 +51,7 @@ class UploaderTest(unittest.TestCase):
                 return StringIO.StringIO(json.dumps({ "url": fake_result_url }))
 
         u = TestingUploader.make()
-        ret = u.upload("http://example.com/", "Hello, World!", "Hello?")
+        ret = u.upload(gisted.Post(None, "http://example.com/", "Hello, World!", "Hello?"))
         self.assertEquals(ret["url"], fake_result_url)
         self.assertTrue("https://api.github.com/gists" in u._req.get_full_url())
         q = urlparse.parse_qs(urlparse.urlparse(u._req.get_full_url()).query)
@@ -61,25 +61,16 @@ class UploaderTest(unittest.TestCase):
         self.assertEquals("xxxx", u.created_id)
 
         withauth = TestingUploader.make("faketoken")
-        ret = withauth.upload("http://example.com/", "Hello, World!", "Hello?")
+        ret = withauth.upload(gisted.Post(None, "http://example.com/", "Hello, World!", "Hello?"))
         self.assertEquals("https://api.github.com/gists", withauth._req.get_full_url())
         q = urlparse.parse_qs(urlparse.urlparse(withauth._req.get_full_url()).query)
         self.assertNotIn("client_id", q)
         self.assertNotIn("client_secret", q)
         self.assertEquals("token faketoken", withauth._req.get_header("Authorization"))
 
-    def test_make_filename(self):
-        target = gisted.Uploader.make()
-        self.assertEquals("hello.md", target._make_filename("Hello"))
-        self.assertEquals("hello-world.md", target._make_filename("Hello, World"))
-        self.assertEquals("hello-world.md", target._make_filename("\\Hello, World//"))
-        self.assertEquals("hello-012.md", target._make_filename("hello-012"))
-        self.assertEquals("transcript.md", target._make_filename("***"))
-        self.assertEquals("young-ha-kim-be-an-artist-right-now.md", target._make_filename("Young-ha Kim: Be an artist, right now! | Video on TED.com"))
-
     def test_make_body(self):
         target = gisted.Uploader.make()
-        body = target._make_body("http://example.com/", "Hello, World!", "Hello?")
+        body = target._make_body(gisted.Post.make("http://example.com/", "Hello, World!", "Hello?"))
         body_dict = json.loads(body)
         self.assertIn("Hello?", body_dict["files"]["hello-world.md"])
         self.assertIn("----", body_dict["files"]["hello-world.md"])
@@ -87,12 +78,26 @@ class UploaderTest(unittest.TestCase):
 
 class PostTest(unittest.TestCase):
     def test_parser(self):
-        body = open(conf.data_path("hello-post.md")).read()
-        target = gisted.Post.make("12345", body)
-        self.assertEquals(target.title, "Commencement Address to Atlanta’s John Marshall Law School")
+        body = open(conf.data_path("hello-post.md")).read().decode("utf-8")
+        target = gisted.Post.parse("12345", body)
+        self.assertEquals(target.title, u"Commencement Address to Atlanta’s John Marshall Law School")
         self.assertEquals(target.source_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
         self.assertEquals(target.source_hostname, "lessig.tumblr.com")
         self.assertEquals(len(target.paragraphs), 56)
+        markdown = target.to_markdown()
+        self.assertIn("----", markdown)
+
+    def test_filename(self):
+        def with_title(title):
+            return gisted.Post(None, None, title, None)
+
+        target = gisted.Uploader.make()
+        self.assertEquals("hello.md", with_title("Hello").filename)
+        self.assertEquals("hello-world.md", with_title("Hello, World").filename)
+        self.assertEquals("hello-world.md", with_title("\\Hello, World//").filename)
+        self.assertEquals("hello-012.md", with_title("hello-012").filename)
+        self.assertEquals("transcript.md", with_title("***").filename)
+        self.assertEquals("young-ha-kim-be-an-artist-right-now.md", with_title("Young-ha Kim: Be an artist, right now! | Video on TED.com").filename)
 
 
 class DownloaderTest(unittest.TestCase):
