@@ -56,8 +56,8 @@ class Extractor(object):
 
 TRANSCRIPT_HEADER_TEMPLSTE = """
 
- * Retrieved from: {url}
- * Posted through: http://gisted.in/
+ * Source: {url}
+ * Paster: http://gisted.in/
 
 ----
 
@@ -132,30 +132,30 @@ class Uploader(GithubClient):
 
 
 class Post(object):
-    def __init__(self, gist_id, original_url, title, paragraphs):
+    def __init__(self, gist_id, source_url, title, paragraphs):
         self.gist_id = gist_id
-        self.original_url = original_url
+        self.source_url = source_url
         self.title = title
         self.paragraphs = paragraphs
 
     @property
-    def original_hostname(self):
-        return urlparse.urlparse(self.original_url).hostname
+    def source_hostname(self):
+        return urlparse.urlparse(self.source_url).hostname
 
     @classmethod
     def make(cls, gist_id, raw_body):
         head, body = raw_body.split("----")
-        m = re.search("\* Retrieved from: (.*)\n", head)
+        m = re.search("\* +Source: *(.*)\n", head)
         if not m:
             raise NotFound("Couldn't see the original URL.")
-        original_url = m.group(1).strip()
+        source = m.group(1).strip()
         m = re.search("([^=]*)(=+)(.*)", body, re.S)
         if not m:
             raise NotFound("Couldn't see the title.")
         title = m.group(1).strip()
         remaining = m.group(3).strip()
         paras = re.split("\n\n+", remaining)
-        return Post(gist_id, original_url, title, paras)
+        return Post(gist_id, source, title, paras)
 
         
 class Gist(GithubClient):

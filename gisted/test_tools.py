@@ -82,8 +82,8 @@ class PostTest(unittest.TestCase):
         body = open(conf.data_path("hello-post.md")).read()
         target = gisted.Post.make("12345", body)
         self.assertEquals(target.title, "Commencement Address to Atlanta’s John Marshall Law School")
-        self.assertEquals(target.original_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
-        self.assertEquals(target.original_hostname, "lessig.tumblr.com")
+        self.assertEquals(target.source_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
+        self.assertEquals(target.source_hostname, "lessig.tumblr.com")
         self.assertEquals(len(target.paragraphs), 56)
 
 

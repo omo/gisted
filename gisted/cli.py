@@ -15,7 +15,7 @@ def download(options):
     post = g.get(options.gist)
     print u"gist id: {gist_id}".format(gist_id=post.gist_id)
     print u"title:   {title}".format(title=post.title)
-    print u"url:     {url}".format(url=post.original_url)
+    print u"url:     {url}".format(url=post.source_url)
     print u"\n\n".join(post.paragraphs)
 
 def parse_args(args):
