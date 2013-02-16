@@ -4,7 +4,8 @@ TEST_OPTIONS    = ""
 
 run:
 	. ./bin/activate && python web.py
-
+grun:
+	. ./bin/activate && gunicorn --config=confs/gunicorn.conf.py web:app
 test:
 	. ./bin/activate && python -m unittest discover ${TEST_OPTIONS}
 

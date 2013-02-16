@@ -5,6 +5,7 @@ import StringIO
 import unittest
 import base64
 import urllib2
+import urlparse
 import json
 import gisted
 import gisted.conf as conf
@@ -72,4 +73,23 @@ class PostTest(unittest.TestCase):
         self.assertEquals(target.title, "Commencement Address to Atlanta’s John Marshall Law School")
         self.assertEquals(target.original_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
         self.assertEquals(target.original_hostname, "lessig.tumblr.com")
-        self.assertEquals(len(target.paragraphs), 2)
+        self.assertEquals(len(target.paragraphs), 56)
+
+class AuthTest(unittest.TestCase):
+    def test_redirect_url(self):
+        auth = gisted.Auth.make({})
+        u = urlparse.urlparse(auth.redirect_url_for("/hello"))
+        q = urlparse.parse_qs(u.query)
+        self.assertTrue("None" != q["client_id"][0])
+        self.assertTrue("None" != q["state"][0])
+        self.assertEquals("/hello", q["redirect_uri"][0])
+
+    def test_did_come_back(self):
+        class TestAuth(gisted.Auth):
+            def open(self, req):
+                self._req = req
+                return StringIO.StringIO(json.dumps({ "access_token": "mytoken" }))
+
+        auth = TestAuth.make({})
+        auth.did_come_back({ "code": "mycode", "state": auth.canary, "redirect_uri": "/hello" })
+        self.assertEquals(auth.redirect_uri, "/hello")

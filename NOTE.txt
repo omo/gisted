@@ -7,12 +7,19 @@ TODO:
  + Get API Key
  + API key file setup
  + uploader (in CLI)
- - transcript page
+ + transcript page
+ > deploy to hasbug host
+   . pull out nginx setting from hasbug -> not needed.
+   + rename gunicorn upstart setting
+   + re-deploy hasbug
+   . create gisted account on linux -> not needed. can just use the default one.
+   - dns
+   + push gisted repo to the hub
+   - bootup through fabric
+   + set flask credential
+   + make gunicorn run locally
+ - oauth + user
  - Stub index page
  - end-to-end (post the url -> scrape and upload -> redirect)
- - deploy to hasbug host
-   * XXX
-
-----
-
- * Authentication
+ - styling
+ - cookie encryption

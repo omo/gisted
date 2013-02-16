@@ -3,7 +3,9 @@
 import os
 import json
 import re
+import random
 import codecs
+import string
 import urllib
 import urllib2
 import urlparse
@@ -12,6 +14,9 @@ import gisted.conf as conf
 
 def urlopen(req):
     return urllib.urlopen(req)
+
+def random_string(n=8):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(n))
 
 
 class NotFound(Exception):
@@ -167,3 +172,46 @@ class Gist(object):
     def get(self, id):
         body = self._get_raw_body(id) if id != "testshow" else codecs.open(conf.data_path("hello-post.md"), encoding="utf-8").read()
         return Post.make(id, body)
+
+
+class Auth(object):
+    @classmethod
+    def make(cls, session):
+        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), session)
+
+    def __init__(self, client_id, client_secret, session):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self._session = session
+
+    def open(self, req):
+        return urllib2.urlopen(req)
+
+    def did_come_back(self, args):
+        code = args["code"]
+        state = args["state"]
+        if self.canary != state:
+            return False
+
+        post_url = "https://github.com/login/oauth/access_token"
+        post_data = "client_id={client_id}&client_secret={client_secret}&code={code}&state={state}".format(
+            client_id = conf.credential("github_client_id"),
+            client_secret = conf.credential("github_client_secret"),
+            code = code,
+            state = state)
+        req = urllib2.Request(post_url, post_data, headers={"Accept": "application/json"})
+        resp = json.load(self.open(req))
+        self._session["token"] = resp["access_token"]
+        self.redirect_uri = args["redirect_uri"]
+
+    @property
+    def canary(self):
+        if not self._session.get("canary"):
+            self._session["canary"] = random_string()
+        return self._session["canary"]
+
+    def redirect_url_for(self, requested_uri):
+        params = { "c": self.client_id, 
+                   "s": self.canary,
+                   "u": urllib.quote(requested_uri, "") }
+        return "https://github.com/login/oauth/authorize?scope=gist&client_id={c}&state={s}&redirect_uri={u}".format(**params)
