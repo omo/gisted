@@ -9,6 +9,9 @@ grun:
 test:
 	. ./bin/activate && python -m unittest discover ${TEST_OPTIONS}
 
+all:
+	echo "do nothing for now"
+
 upload-lessig:
 	./bin/gisteder upload --url "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law" --title "Commencement Address to Atlanta’s John Marshall Law School" --file data/lessig.md
 
@@ -33,4 +36,4 @@ deploy:
 init_app:
 	. ./bin/activate && fab -H gisted.in -u ubuntu init_app
 
-.PHONY: ${PIP_REQUIREMENT} deploy run clean test
+.PHONY: ${PIP_REQUIREMENT} deploy run clean test all
