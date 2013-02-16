@@ -1,0 +1,4 @@
+
+GISTEDER_HERE=`dirname $0`
+source ${GISTEDER_HERE}/activate
+python ${GISTEDER_HERE}/gisteder.py "$@"

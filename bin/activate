@@ -1,0 +1,11 @@
+
+. ./venv/bin/activate
+
+if [ -d $NVM_DIR ]; then
+   . $NVM_DIR/nvm.sh
+   nvm use v0.8.14
+fi
+
+HERE=`pwd`
+export PATH=$PATH:$HERE/node_modules/.bin
+export API_CONFIG=$HERE/confs/api.conf

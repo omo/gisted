@@ -1,0 +1,18 @@
+
+
+TODO:
+
+ + stub flask stack
+ + scraper (in test)
+ + Get API Key
+ + API key file setup
+ + uploader (in CLI)
+ - transcript page
+ - Stub index page
+ - end-to-end (post the url -> scrape and upload -> redirect)
+ - deploy to hasbug host
+   * XXX
+
+----
+
+ * Authentication

@@ -1,0 +1,13 @@
+venv
+*.pyc
+run
+log
+.testdata
+confs/api.conf
+confs/s3cmd.conf
+components
+node_modules
+public/stylesheets
+public/font
+public/javascript/vendor
+target/
