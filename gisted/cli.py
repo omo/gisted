@@ -11,8 +11,8 @@ def upload(options):
     print r["url"]
 
 def download(options):
-    g = tools.Gist.make()
-    post = g.get(options.gist)
+    d = tools.Downloader.make()
+    post = d.get(options.gist)
     print u"gist id: {gist_id}".format(gist_id=post.gist_id)
     print u"title:   {title}".format(title=post.title)
     print u"url:     {url}".format(url=post.source_url)

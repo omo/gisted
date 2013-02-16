@@ -158,13 +158,13 @@ class Post(object):
         return Post(gist_id, source, title, paras)
 
         
-class Gist(GithubClient):
+class Downloader(GithubClient):
     @classmethod
     def make(cls, token=None):
         return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
 
     def __init__(self, client_id, client_secret, token=None):
-        super(Gist, self).__init__(client_id, client_secret, token)
+        super(Downloader, self).__init__(client_id, client_secret, token)
 
     def _find_raw_url(self, resp):
         files = resp["files"]

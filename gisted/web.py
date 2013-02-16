@@ -19,8 +19,8 @@ def index():
 
 @app.route('/<id>')
 def show(id):
-    gist = tools.Gist.make(tools.Auth.make(f.session).token)
-    post = gist.get(id)
+    loader = tools.Downloader.make(tools.Auth.make(f.session).token)
+    post = loader.get(id)
     return f.render_template("show.html", post=post)
 
 #

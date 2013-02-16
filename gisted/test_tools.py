@@ -87,6 +87,14 @@ class PostTest(unittest.TestCase):
         self.assertEquals(len(target.paragraphs), 56)
 
 
+class DownloaderTest(unittest.TestCase):
+    def test_hello(self):
+        target = gisted.Downloader.make()
+        resp = json.load(open(conf.data_path("hello-gist.json")))
+        url = target._find_raw_url(resp)
+        self.assertEquals("https://gist.github.com/raw/365370/8c4d2d43d178df44f4c03a7f2ac0ff512853564e/ring.erl", url)
+
+
 class AuthTest(unittest.TestCase):
     def test_redirect_url(self):
         auth = gisted.Auth.make({})
