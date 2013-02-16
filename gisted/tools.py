@@ -66,15 +66,31 @@ TRANSCRIPT_HEADER_TEMPLSTE = """
 
 """
 
-class Uploader(object):
-    @classmethod
-    def make(cls):
-        return cls(conf.credential("github_client_id"),
-                   conf.credential("github_client_secret"))
+class GithubClient(object):
+    BASE_URI = "https://api.github.com"
 
-    def __init__(self, client_id, client_secret):
+    def __init__(self, client_id, client_secret, token):
         self._client_id = client_id
         self._client_secret = client_secret
+        self._token = token
+
+    def build_request(self, path, data=None):
+        url = urlparse.urljoin(self.BASE_URI, path)
+        if self._token:
+            return urllib2.Request(url, data=data, headers={ "Authorization": "token {t}".format(t=self._token) })
+        if "?" not in url:
+            url = url + "?"
+        url = url + "client_id={client_id}&client_secret={client_secret}".format(client_id=self._client_id, client_secret=self._client_secret)
+        return urllib2.Request(url, data=data)
+
+
+class Uploader(GithubClient):
+    @classmethod
+    def make(cls, token=None):
+        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
+
+    def __init__(self, client_id, client_secret, token=None):
+        super(Uploader, self).__init__(client_id, client_secret, token)
 
     def _make_filename(self, filename):
         stripped = re.sub("\\|.*$", "", filename)
@@ -104,10 +120,8 @@ class Uploader(object):
     def _open(self, req):
         return urllib2.urlopen(req)
 
-    def upload(self, url, title, text):
-        post_url = "https://api.github.com/gists?client_id={client_id}&client_secret={client_secret}".format(client_id=self._client_id, client_secret=self._client_secret)
-        body = self._make_body(url, title, text)
-        resp = self._open(urllib2.Request(url=post_url, data=body))
+    def upload(self, source_url, title, text):
+        resp = self._open(self.build_request("/gists", data=self._make_body(source_url, title, text)))
         self.response = json.load(resp)
         return self.response
     
@@ -115,6 +129,7 @@ class Uploader(object):
     def created_id(self):
         m = re.search("https://api\\.github\\.com/gists/(.*)", self.response["url"])
         return m.group(1)
+
 
 class Post(object):
     def __init__(self, gist_id, original_url, title, paragraphs):
@@ -143,15 +158,13 @@ class Post(object):
         return Post(gist_id, original_url, title, paras)
 
         
-class Gist(object):
+class Gist(GithubClient):
     @classmethod
-    def make(cls):
-        return cls(conf.credential("github_client_id"),
-                   conf.credential("github_client_secret"))
+    def make(cls, token=None):
+        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
 
-    def __init__(self, client_id, client_secret):
-        self._client_id = client_id
-        self._client_secret = client_secret
+    def __init__(self, client_id, client_secret, token=None):
+        super(Gist, self).__init__(client_id, client_secret, token)
 
     def _find_raw_url(self, resp):
         files = resp["files"]
@@ -163,9 +176,7 @@ class Gist(object):
         return urllib2.urlopen(req)
 
     def _get_raw_body(self, id):
-        get_url = "https://api.github.com/gists/{id}?client_id={client_id}&client_secret={client_secret}".format(
-            id=id, client_id=self._client_id, client_secret=self._client_secret)
-        resp = json.load(self._open(urllib2.Request(url=get_url)))
+        resp = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
         raw_url = self._find_raw_url(resp)
         return self._open(raw_url).read().decode('utf-8')
         
@@ -204,6 +215,17 @@ class Auth(object):
         req = urllib2.Request(post_url, post_data, headers={"Accept": "application/json"})
         resp = json.load(self.open(req))
         self._session["token"] = resp["access_token"]
+
+    def fake_login(self):
+        self._session["token"] = "fake_token"
+
+    @property
+    def token(self):
+        return self._session.get("token")
+
+    @property
+    def authenticated(self):
+        return None != self.token
 
     @property
     def canary(self):

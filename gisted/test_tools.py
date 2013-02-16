@@ -52,9 +52,20 @@ class UploaderTest(unittest.TestCase):
         u = TestingUploader.make()
         ret = u.upload("http://example.com/", "Hello, World!", "Hello?")
         self.assertEquals(ret["url"], fake_result_url)
-        self.assertTrue("https://api.github.com/" in u._req.get_full_url())
+        self.assertTrue("https://api.github.com/gists" in u._req.get_full_url())
+        q = urlparse.parse_qs(urlparse.urlparse(u._req.get_full_url()).query)
+        self.assertIn("client_id", q)
+        self.assertIn("client_secret", q)
         json.loads(u._req.get_data()) # Should be a JSON
         self.assertEquals("xxxx", u.created_id)
+
+        withauth = TestingUploader.make("faketoken")
+        ret = withauth.upload("http://example.com/", "Hello, World!", "Hello?")
+        self.assertEquals("https://api.github.com/gists", withauth._req.get_full_url())
+        q = urlparse.parse_qs(urlparse.urlparse(withauth._req.get_full_url()).query)
+        self.assertNotIn("client_id", q)
+        self.assertNotIn("client_secret", q)
+        self.assertEquals("token faketoken", withauth._req.get_header("Authorization"))
 
     def test_make_filename(self):
         target = gisted.Uploader.make()
@@ -74,6 +85,7 @@ class PostTest(unittest.TestCase):
         self.assertEquals(target.original_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
         self.assertEquals(target.original_hostname, "lessig.tumblr.com")
         self.assertEquals(len(target.paragraphs), 56)
+
 
 class AuthTest(unittest.TestCase):
     def test_redirect_url(self):

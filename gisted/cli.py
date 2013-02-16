@@ -13,10 +13,10 @@ def upload(options):
 def download(options):
     g = tools.Gist.make()
     post = g.get(options.gist)
-    print "gist id: {gist_id}".format(gist_id=post.gist_id)
-    print "title:   {title}".format(title=post.title)
-    print "url:     {url}".format(url=post.original_url)
-    print "\n\n".join(post.paragraphs)
+    print u"gist id: {gist_id}".format(gist_id=post.gist_id)
+    print u"title:   {title}".format(title=post.title)
+    print u"url:     {url}".format(url=post.original_url)
+    print u"\n\n".join(post.paragraphs)
 
 def parse_args(args):
     parser = optparse.OptionParser()
