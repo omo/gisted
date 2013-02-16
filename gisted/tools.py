@@ -210,6 +210,7 @@ class Paster(object):
     def created_id(self):
         return self.up.created_id
 
+
 class Auth(object):
     BACK_URI = "http://gisted.in/logback"
 
@@ -221,6 +222,7 @@ class Auth(object):
         self.client_id = client_id
         self.client_secret = client_secret
         self._session = session
+        self.allows_anonymous = False
 
     def open(self, req):
         return urllib2.urlopen(req)
@@ -251,6 +253,10 @@ class Auth(object):
     @property
     def authenticated(self):
         return None != self.token
+
+    @property
+    def allows_pasting(self):
+        return self.authenticated or self.allows_anonymous
 
     @property
     def canary(self):

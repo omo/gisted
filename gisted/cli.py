@@ -4,6 +4,7 @@ import sys
 import optparse
 import gisted.tools as tools
 import logging
+import urllib2
 
 def upload(options):
     u = tools.Uploader.make()
@@ -17,6 +18,10 @@ def download(options):
     print u"title:   {title}".format(title=post.title)
     print u"url:     {url}".format(url=post.source_url)
     print u"\n\n".join(post.paragraphs)
+
+def extract(options):
+    e = tools.Extractor(urllib2.open(options.url))
+    # TBD
 
 def parse_args(args):
     parser = optparse.OptionParser()

@@ -16,12 +16,13 @@ app.secret_key = conf.credential("flask_secret_key")
 @app.route('/', methods=["GET", "POST"])
 def index():
     auth = tools.Auth.make(f.session)
+    #auth.allows_anonymous = True
     if f.request.method == "GET":
         return f.render_template("index.html", auth=auth)
     elif f.request.method == "POST":
-        if not auth.authenticated:
-            return f.abort(403)
         if auth.canary != f.request.values["canary"]:
+            return f.abort(403)
+        if not auth.allows_pasting:
             return f.abort(403)
         source = f.request.values["u"]
         paster = tools.Paster.make(auth.token)

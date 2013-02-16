@@ -77,6 +77,13 @@ class UploaderTest(unittest.TestCase):
         self.assertEquals("transcript.md", target._make_filename("***"))
         self.assertEquals("young-ha-kim-be-an-artist-right-now.md", target._make_filename("Young-ha Kim: Be an artist, right now! | Video on TED.com"))
 
+    def test_make_body(self):
+        target = gisted.Uploader.make()
+        body = target._make_body("http://example.com/", "Hello, World!", "Hello?")
+        body_dict = json.loads(body)
+        self.assertIn("Hello?", body_dict["files"]["hello-world.md"])
+        self.assertIn("----", body_dict["files"]["hello-world.md"])
+
 
 class PostTest(unittest.TestCase):
     def test_parser(self):
