@@ -15,13 +15,18 @@ def virtualenv(command):
 
 # Invokable commands:
 
+def init_app():
+    # Should run 'git clone' here.
+    with cd(PROJECT_DIR):
+        run("virtualenv --distribute venv")
+
 def update():
     with cd(PROJECT_DIR):
         run("git pull origin master")
         run("export NVM_DIR={dir}".format(dir=NVM_DIR))
         virtualenv("pip install -r requirements.txt")
-        virtualenv("npm install")
-        virtualenv("bower install")
+        #virtualenv("npm install")
+        #virtualenv("bower install")
         put("confs/api.conf", "confs/api.conf")
         run("make clean all")
 

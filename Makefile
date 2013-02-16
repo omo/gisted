@@ -14,6 +14,10 @@ upload-lessig:
 
 download-hello:
 	./bin/gisteder download --gist 4965816
+
+clean:
+	-find gisted -name "*.pyc" | xargs rm
+	-rm *.pyc
 #
 # virtualenv related rules
 #
@@ -21,5 +25,12 @@ freeze: ${PIP_REQUIREMENT}
 
 ${PIP_REQUIREMENT}:
 	. ./bin/activate && pip freeze > $@
+
+
+# Fabrics
+deploy:
+	. ./bin/activate && fab -H gisted.in -u ubuntu deploy
+init_app:
+	. ./bin/activate && fab -H gisted.in -u ubuntu init_app
 
 .PHONY: ${PIP_REQUIREMENT} deploy run clean test
