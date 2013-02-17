@@ -145,6 +145,23 @@ hr {
   margin-bottom: 2em;
 }
 
+ul.flash {
+  display: block;
+  width: 80%;
+}
+
+ul.flash li {
+  display: block;
+  font-size: 14px;
+  padding: 0.5em;
+  border-radius: 0.4em;
+}
+
+ul.flash li.error {
+  background-color: #ecc;
+  color: #800;
+}
+
 </style>
 </head>
 <body>
@@ -156,6 +173,16 @@ hr {
 <span class="tagline">Ideas worth<br />pasting<span>
 </h1>
 </div>
+
+{% with errors = get_flashed_messages(category_filter=["error"]) %}
+{% if errors %}
+<ul class="flash">
+    {% for message in errors %}
+    <li class="error">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 
 <form action="/" method="POST" class="submit">
    <input type="hidden" name="canary" value="{{ auth.canary }}" />
@@ -171,14 +198,14 @@ hr {
   Give
 {% endif %}
    &#x2191; a link to your favorite talk. It will be pasted into your <a href="https://gist.github.com/">gist</a>,
-   and be ironed by Gisted. It will look like <a href="http://gisted.in/4970352">this</a>.
+   and be ironed by Gisted. The paste will look like <a href="http://gisted.in/4970352">this</a>.
 </p>
 <hr />
 <p>
    Gisted supports <a href="http://www.ted.com/">ted.com</a> for now. 
-   Please <a href="https://github.com/omo/gisted/issues">file a bug</a> for blaming or requesting things. <a href="https://github.com/omo">I</a> would appreciate it.
+   Please <a href="https://github.com/omo/gisted/issues">file a bug</a> for blaming or requesting things - <a href="https://github.com/omo">I</a> would highly appreciate it.
 {% if auth.authenticated %}
-   If you just don't like this and want to leave, here for <a href="{{ url_for('logout') }}">signing out</a>.
+   If you just don't like this and want to leave, here to <a href="{{ url_for('logout') }}">sign out</a>.
 {% endif %}
 </p>
 

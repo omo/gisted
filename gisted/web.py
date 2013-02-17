@@ -20,21 +20,19 @@ def index():
     auth = tools.Auth.make(f.session)
     if f.request.method == "GET":
         return f.render_template("index.html", auth=auth)
-    elif f.request.method == "POST":
+    else:
         if auth.canary != f.request.values["canary"]:
             return f.abort(403)
         if not auth.allows_pasting:
             return f.abort(403)
-        source = f.request.values["u"].strip()
         paster = tools.Paster.make(auth.token)
-        paster.paste_from(source)
-        return f.redirect(f.url_for("show", id=paster.created_id))
-    else:
-        return f.abort(403)
-
-@app.route('/favicon.ico')
-def favicon():
-    return app.send_static_file("favicon.ico")
+        try:
+            source = f.request.values["u"].strip()
+            paster.paste_from(source)
+            return f.redirect(f.url_for("show", id=paster.created_id))
+        except tools.Invalid, e:
+            f.flash(e.message, "error")
+            return f.redirect(f.url_for("index"))
 
 @app.route('/<id>')
 def show(id):
@@ -57,6 +55,9 @@ if conf.enable_debug_pages:
             u.upload(post)
             return "<a href='{url}'>{id}</a>".format(url=u.created_page_url, id=u.created_id)
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file("favicon.ico")
 
 #
 # Authentication

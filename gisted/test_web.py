@@ -2,7 +2,9 @@
 
 import unittest
 import flask
+import bs4
 import gisted.web
+import gisted
 
 class WebTest(unittest.TestCase):
     def setUp(self):
@@ -24,3 +26,19 @@ class WebTest(unittest.TestCase):
     def test_debug_login(self):
         resp = self.app.get("/debug_login")
         self.assertTrue("302" in resp.status)
+
+    def fake_login(self):
+        with self.app.session_transaction() as sess:
+            gisted.Auth.make(sess).fake_login()
+        return self.app.get("/")
+
+    def test_index_flash(self):
+        with self.app as c:
+            self.fake_login()
+            resp = c.post("/", data = { "canary": flask.session["canary"], "u": "http://example.com/notsupported" })
+            self.assertTrue("302" in resp.status)
+            resp = c.get("/")
+            soup = bs4.BeautifulSoup(resp.data)
+            error_notices = soup.find_all("li")
+            self.assertEquals(1, len(error_notices))
+

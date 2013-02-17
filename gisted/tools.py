@@ -18,8 +18,11 @@ def urlopen(req):
 def random_string(n=8):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(n))
 
+class Invalid(Exception):
+    def __init__(self, message):
+        super(Invalid, self).__init__(message)  
 
-class NotFound(Exception):
+class NotFound(Invalid):
     def __init__(self, message):
         super(NotFound, self).__init__(message)  
 
@@ -148,6 +151,8 @@ class Fetcher(object):
     @property
     def transcript_paragraphs(self):
         lines = self.soup.find_all("a", class_="transcriptLink")
+        if not lines:
+            raise Invalid("No transcipt... Try other than {url}".format(url=self._uri))
         found_ptags = []
         paragraphs = []
         for line in lines:
@@ -168,6 +173,19 @@ class Fetcher(object):
     @property
     def post(self):
         return Post.make(self.title, self.transcript_text, self._uri)
+
+    @classmethod
+    def validate_supported(cls, mayurl):
+        u = urlparse.urlparse(mayurl)
+        if not (u.scheme and u.hostname):
+            raise Invalid("Give me a URL!")
+        if not mayurl.startswith("http://www.ted.com/"):
+            raise Invalid("Sorry, but this site is not supported!: {url}".format(url=mayurl))
+
+    @classmethod
+    def make(cls, url):
+        cls.validate_supported(url)
+        return cls(url)
 
 
 class GithubClient(object):
@@ -283,7 +301,7 @@ class Paster(object):
         return urllib2.urlopen(req)
 
     def paste_from(self, source_url):
-        fetcher = self.fetcher_class(source_url)
+        fetcher = self.fetcher_class.make(source_url)
         return self.up.upload(fetcher.post)
         
     @property

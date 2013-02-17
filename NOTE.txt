@@ -34,6 +34,7 @@ TODO:
    - download fail
  - focus on textbox on load
  - improve logging
+ - set user-agent header.
 
  - refactor: extract open-er as a class.
 
