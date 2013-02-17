@@ -4,6 +4,7 @@ import os
 import flask
 import gisted.tools as tools
 import gisted.conf as conf
+import gisted.session as session
 import flask as f
 import logging
 
@@ -12,6 +13,7 @@ static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
 
 app = flask.Flask(__name__, template_folder = template_dir, static_folder = static_dir)
 app.secret_key = conf.credential("flask_secret_key")
+app.session_interface = session.SessionInterface(app.secret_key[:8])
 
 @app.route('/', methods=["GET", "POST"])
 def index():
