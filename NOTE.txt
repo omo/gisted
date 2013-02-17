@@ -35,15 +35,17 @@ TODO:
      + non existence gist
      + bad gist data
  + focus on textbox on load
- - set user-agent header.
+ + set user-agent header.
+ + favicon
+ + put social thing on index.html
+ + README.md
+ - add caching
 
- - improve logging
- - refactor: extract open-er as a class.
+ - infoq support.
 
 ----
- + favicon
- - put social thing on index.html
- - add caching
+ - improve logging
+ - refactor: extract open-er as a class.
  - adopt markdown parser
 
 -----
