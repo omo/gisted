@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=800" />
 <meta name="description" content="Gisted is a tool to make transcripts like as if it is for reading.">
 <title>Gisted: Ideas worth pasting</title>
-<link href='http://fonts.googleapis.com/css?family=Titillium+Web:700|Raleway:200' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Titillium+Web:400:700|Raleway:200' rel='stylesheet' type='text/css'>
 <style>
 
 html {
@@ -41,9 +41,9 @@ h1 {
 
 h1 .brand {
   display: inline-block;
-  font-family: "Titillium Web", Verdana, sans-serif;
   font-weight: bold;
   font-size: 48px;
+  font-family: "Titillium Web", Verdana, sans-serif;
 }
 
 h1 .tagline {
@@ -52,6 +52,7 @@ h1 .tagline {
   font-weight: 200, normal;
   font-size: 20px;
   color: #444;
+  text-align: left;
 }
 
 input[name="u"], input[name="submit"] {
@@ -159,7 +160,7 @@ hr {
 <form action="/" method="POST" class="submit">
    <input type="hidden" name="canary" value="{{ auth.canary }}" />
    <div class="submitbox {% if not auth.allows_pasting %}submitbox-disabled{% endif %}">
-     <input type="text" name="u" value="" placeholder="http://..." {% if not auth.allows_pasting %}disabled{% endif %}/>
+     <input spellcheck="no" type="text" name="u" value="" placeholder="http://..." {% if not auth.allows_pasting %}disabled{% else %}autofocus{% endif %}/>
      <input type="submit" name="submit" value="+" {% if not auth.allows_pasting %}disabled{% endif %}/>
    </div>
 </form>
@@ -169,15 +170,15 @@ hr {
 {% else %}
   Give
 {% endif %}
-   a link to your favorite talk here. It will be pasted into your <a href="https://gist.github.com/">gist</a> and
-   Gisted irons it like <a href="http://gisted.in/4970352">this</a>.
+   &#x2191; a link to your favorite talk. It will be pasted into your <a href="https://gist.github.com/">gist</a>,
+   and be ironed by Gisted. It will look like <a href="http://gisted.in/4970352">this</a>.
 </p>
 <hr />
 <p>
    Gisted supports <a href="http://www.ted.com/">ted.com</a> for now. 
    Please <a href="https://github.com/omo/gisted/issues">file a bug</a> for blaming or requesting things. <a href="https://github.com/omo">I</a> would appreciate it.
 {% if auth.authenticated %}
-   If you just don't like this and want to leave, <a href="{{ url_for('logout') }}">here for signing out</a>.
+   If you just don't like this and want to leave, here for <a href="{{ url_for('logout') }}">signing out</a>.
 {% endif %}
 </p>
 

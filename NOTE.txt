@@ -27,11 +27,12 @@ TODO:
  + cookie encryption
  > styling
    + index
-   - show
+   + show
  > errors
    - unsupported url
    - upload fail
    - download fail
+ - focus on textbox on load
  - improve logging
 
  - refactor: extract open-er as a class.
