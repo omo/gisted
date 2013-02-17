@@ -22,11 +22,6 @@ class Invalid(Exception):
     def __init__(self, message):
         super(Invalid, self).__init__(message)  
 
-class NotFound(Invalid):
-    def __init__(self, message):
-        super(NotFound, self).__init__(message)  
-
-
 TRANSCRIPT_TEMPLSTE = u"""
 
  * From: {url}
@@ -95,7 +90,10 @@ class Post(object):
 
     @classmethod
     def parse(cls, gist_id, raw_body):
-        head, body = raw_body.split("----")
+        sep = "----"
+        if sep not in raw_body:
+            raise Invalid("No header separator...: gist:{id}".format(id=gist_id))
+        head, body = raw_body.split(sep)
         props = {}
         for line in head.split("\n"):
             line = line.strip()
@@ -103,13 +101,13 @@ class Post(object):
                 continue
             m = re.search("\* +(\w+): *(.*)", line)
             if not m:
-                raise NotFound("Bad header line: {line}".format(line=line))
+                raise Invalid("Bad header line...: {line} in gist:{id}".format(line=line, id=gist_id))
             props[m.group(1)] = m.group(2).strip()
         if not props.get("From"):
-            raise NotFound("Source URI isn't in the header.")
+            raise Invalid("Source URI isn't in the header... : gist:{id}".format(id=gist_id))
         m = re.search("([^=]*)(=+)(.*)", body, re.S)
         if not m:
-            raise NotFound("Couldn't see the title.")
+            raise Invaid("Couldn't see the title...: gist:{id}".format(id=gist_id))
         title = m.group(1).strip()
         remaining = m.group(3).strip()
         return Post(gist_id, title, remaining, props)
@@ -278,12 +276,17 @@ class Downloader(GithubClient):
         return gist["user"]["url"]
 
     def get(self, id):
-        gist = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
-        body = self._get_raw_body(gist)
-        cont = self._get_contributor_url(gist)
-        post = Post.parse(id, body)
-        post.contributor_url = cont
-        return post
+        try:
+            gist = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
+            body = self._get_raw_body(gist)
+            cont = self._get_contributor_url(gist)
+            post = Post.parse(id, body)
+            post.contributor_url = cont
+            return post
+        except urllib2.HTTPError, e:
+            # XXX: Should be logged
+            raise Invalid("An error occured on a remote API call...: gist:{id}".format(id=id))
+
 
 
 class Paster(object):

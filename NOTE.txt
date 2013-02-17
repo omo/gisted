@@ -29,19 +29,21 @@ TODO:
    + index
    + show
  > errors
-   - unsupported url
-   - upload fail
-   - download fail
- - focus on textbox on load
- - improve logging
+   + unsupported url
+   + upload fail
+   > download fail
+     + non existence gist
+     + bad gist data
+ + focus on textbox on load
  - set user-agent header.
 
+ - improve logging
  - refactor: extract open-er as a class.
 
 ----
+ + favicon
  - put social thing on index.html
  - add caching
- - favicon
  - adopt markdown parser
 
 -----

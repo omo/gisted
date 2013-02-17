@@ -15,6 +15,11 @@ app = flask.Flask(__name__, template_folder = template_dir, static_folder = stat
 app.secret_key = conf.credential("flask_secret_key")
 app.session_interface = session.SessionInterface(app.secret_key[:8])
 
+def redirect_index_with_error(error):
+    f.flash(error.message, "error")
+    return f.redirect(f.url_for("index"))
+
+
 @app.route('/', methods=["GET", "POST"])
 def index():
     auth = tools.Auth.make(f.session)
@@ -31,14 +36,16 @@ def index():
             paster.paste_from(source)
             return f.redirect(f.url_for("show", id=paster.created_id))
         except tools.Invalid, e:
-            f.flash(e.message, "error")
-            return f.redirect(f.url_for("index"))
+            return redirect_index_with_error(e)
 
 @app.route('/<id>')
 def show(id):
     loader = tools.Downloader.make(tools.Auth.make(f.session).token)
-    post = loader.get(id)
-    return f.render_template("show.html", post=post)
+    try:
+        post = loader.get(id)
+        return f.render_template("show.html", post=post)
+    except tools.Invalid, e:
+        return redirect_index_with_error(e)
 
 if conf.enable_debug_pages:
     @app.route('/debug_upload', methods=["GET", "POST"])
