@@ -16,4 +16,4 @@ def data_path(name):
     return os.path.join(DATA_DIR, name)
 
 def enable_debug_pages():
-    return True
+    return os.environ.get("GISTED_PROD")
