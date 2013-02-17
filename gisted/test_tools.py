@@ -101,7 +101,7 @@ class PostTest(unittest.TestCase):
         self.assertEquals("hello.md", with_title("Hello").filename)
         self.assertEquals("hello-world.md", with_title("Hello, World").filename)
         self.assertEquals("hello-world.md", with_title("\\Hello, World//").filename)
-        self.assertEquals("hello-012.md", with_title("hello-012").filename)
+        self.assertEquals("hello.md", with_title("hello-012").filename)
         self.assertEquals("transcript.md", with_title("***").filename)
         self.assertEquals("young-ha-kim-be-an-artist-right-now.md", with_title("Young-ha Kim: Be an artist, right now! | Video on TED.com").filename)
 

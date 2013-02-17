@@ -47,7 +47,8 @@ class Post(object):
     @property
     def filename(self):
         stripped = re.sub("\\|.*$", "", self.title)
-        base = re.sub("(^[^\\w+])|([^\\w+]$)", "", re.sub("[^\\w]+", "-", stripped)).lower() 
+        alphaonly = re.sub("([^\\w]|\\d)+", "-", stripped).lower()
+        base = re.sub("(^\\-+)|(\\-+$)", "", alphaonly)
         if not base:
             base = "transcript"
         return base + ".md"
@@ -185,6 +186,10 @@ class Uploader(GithubClient):
         m = re.search("https://api\\.github\\.com/gists/(.*)", self.response["url"])
         return m.group(1)
 
+    @property
+    def created_page_url(self):
+        return "https://gist.github.com/{id}".format(id=self.created_id)
+
         
 class Downloader(GithubClient):
     @classmethod
@@ -235,6 +240,10 @@ class Paster(object):
     @property
     def created_id(self):
         return self.up.created_id
+
+    @property
+    def created_page_url(self):
+        return self.up.created_page_url
 
 
 class Auth(object):

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="{{ url_for('debug_upload') }}" method="POST">
+<ul>
+  <li>Title: <input size="100" name="title" type="text"></li>
+  <li>Source: <input size="100" name="source" type="text"></li>
+  <li>Body: <textarea name="body"></textarea></li>
+</ul>
+<input type="submit" />
+</form>
+
+</body>
+</html>

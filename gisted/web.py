@@ -16,7 +16,6 @@ app.secret_key = conf.credential("flask_secret_key")
 @app.route('/', methods=["GET", "POST"])
 def index():
     auth = tools.Auth.make(f.session)
-    #auth.allows_anonymous = True
     if f.request.method == "GET":
         return f.render_template("index.html", auth=auth)
     elif f.request.method == "POST":
@@ -41,6 +40,21 @@ def show(id):
     post = loader.get(id)
     return f.render_template("show.html", post=post)
 
+if conf.enable_debug_pages:
+    @app.route('/debug_upload', methods=["GET", "POST"])
+    def debug_upload():
+        if f.request.method == "GET":
+            return f.render_template("debug_upload.html")
+        else:
+            auth = tools.Auth.make(f.session)
+            post = tools.Post(gist_id=None, 
+                              source_url=f.request.values["source"],
+                              title=f.request.values["title"],
+                              body=f.request.values["body"])
+            u = tools.Uploader.make(auth.token)
+            u.upload(post)
+            return "<a href='{url}'>{id}</a>".format(url=u.created_page_url, id=u.created_id)
+
 
 #
 # Authentication
@@ -60,7 +74,8 @@ def logout():
     f.session.clear()
     return f.redirect("/")
 
-@app.route('/debug_login')
-def debug_login():
-    tools.Auth.make(f.session).fake_login()
-    return f.redirect("/")
+if conf.enable_debug_pages:
+    @app.route('/debug_login')
+    def debug_login():
+        tools.Auth.make(f.session).fake_login()
+        return f.redirect("/")

@@ -38,5 +38,5 @@ TODO:
 -----
 
 * morth extractor to fetcher
-- investigate fetch behavior (it should be obvious)
++ investigate fetch behavior (it should be obvious)
 - investigate put behavior by creating debug ui
