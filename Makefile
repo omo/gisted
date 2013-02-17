@@ -37,6 +37,8 @@ ${PIP_REQUIREMENT}:
 # Fabrics
 deploy:
 	. ./bin/activate && fab -H gisted.in -u ubuntu deploy
+reload:
+	. ./bin/activate && fab -H gisted.in -u ubuntu reload_daemons
 init_app:
 	. ./bin/activate && fab -H gisted.in -u ubuntu init_app
 
