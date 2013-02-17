@@ -30,7 +30,7 @@ class FetcherTest(unittest.TestCase):
     def test_hello(self):
         class TestingFetcher(gisted.Fetcher):
             def open(self, req):
-                return fetch(req)
+                return fetch(req.get_full_url())
 
         target = TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
         self.assertEquals(target.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")

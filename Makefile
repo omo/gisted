@@ -40,4 +40,4 @@ deploy:
 init_app:
 	. ./bin/activate && fab -H gisted.in -u ubuntu init_app
 
-.PHONY: ${PIP_REQUIREMENT} deploy run clean test all
+.PHONY: ${PIP_REQUIREMENT} deploy run clean test all fetch-shirky download-lessig upload-lessig

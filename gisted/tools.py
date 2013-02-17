@@ -133,7 +133,7 @@ class Fetcher(object):
     @property
     def html(self):
         if not self._html:
-            self._html = self.open(self._uri).read()
+            self._html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read()
         return self._html
 
     @property
