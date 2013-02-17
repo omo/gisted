@@ -1,22 +1,183 @@
 <!DOCTYPE html>
 <html>
-<body>
+<head>
+<title>Gisted: Ideas worth pasting</title>
+<link href='http://fonts.googleapis.com/css?family=Titillium+Web:700|Raleway:200' rel='stylesheet' type='text/css'>
+<style>
 
-<div class="nav">
-  <div><a href="{{ url_for('login') }}">Login</a></div>
-  <div><a href="{{ url_for('logout') }}">Logout</a></div>
+html {
+   background-color: #eee;
+}
+
+html, body {
+   padding: 0px;
+   margin: 0px;
+}
+
+.container {
+   width: 80%;
+   max-width: 640px;
+   margin-left: auto;
+   margin-right: auto;
+   position: relative;
+
+   font-family: Verdana;
+}
+
+.heading {
+  text-align: center;
+}
+
+h1 {
+  font-size: normal;
+  display: inline-block;
+  padding: 5px;
+  margin-top: 2em;
+}
+
+h1 .brand {
+  display: inline-block;
+  font-family: "Titillium Web", Verdana, sans-serif;
+  font-weight: bold;
+  font-size: 48px;
+}
+
+h1 .tagline {
+  display: inline-block;
+  font-family: "Raleway", Verdana, sans-serif;
+  font-weight: 200, normal;
+  font-size: 20px;
+  color: #444;
+}
+
+input[name="u"], input[name="submit"] {
+   font-family: Verdana;
+   font-size: 20px;
+}
+
+.submitbox {
+   display: inline-block;
+   width: 100%;
+
+   position: relative;
+   height: 36px;
+   padding: 0px;
+
+   margin-left: auto;
+   margin-right: auto;
+   margin-top: 1em;
+   margin-bottom: 2em;
+   border-style: none;
+   background-color: white;
+}
+
+input[name="u"] {
+   outline: none;
+   float: left;
+   border: none;
+   width: 100%;
+   height: 100%;
+   box-sizing: border-box;
+   background-color: transparent;
+   padding-left: 0.2em;
+}
+
+input[name="submit"] {
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   height: 36px;
+   width: 30px;
+   outline: none;
+
+   position: absolute;
+   top: 0px;
+   right: 0px;
+
+   padding: 5px;
+   vertical-align: text-bottom;
+   margin: 0px;
+
+   border-style: none; 
+   background-color: black;
+   color: white;
+}
+
+input[name="submit"]:focus {
+   background-color: #47a;
+}
+
+div.submitbox-disabled { background-color: #ccc; }
+input[name="submit"]:disabled { color: #666; }
+
+p a:link, p a:visited {
+  text-decoration: none;
+  font-color:
+}
+
+p {
+  color: #888;
+  line-height: 150%;
+}
+
+p a:link,
+p a:visited {
+  text-decoration: none;
+  color: black;
+}
+
+p a.login:visited,
+p a.login:link {
+  color: black;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+hr {
+  border-style: dashed;
+  border-color: #ccc;
+  width: 50%;
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="heading">
+<h1>
+<span class="brand">Gisted</span>
+<span class="tagline">Ideas worth<br />pasting<span>
+</h1>
 </div>
-<div class="content">
-<h1>Gisted</h1>
-{% if (auth.allows_pasting) %}
-Authenticated
-<form action="/" method="POST">
+
+<form action="/" method="POST" class="submit">
    <input type="hidden" name="canary" value="{{ auth.canary }}" />
-   <input type="text" name="u" value="" placeholder="URL"/>
-   <input type="submit" name="submit" value="Gist!" />
+   <div class="submitbox {% if not auth.allows_pasting %}submitbox-disabled{% endif %}">
+     <input type="text" name="u" value="" placeholder="http://..." {% if not auth.allows_pasting %}disabled{% endif %}/>
+     <input type="submit" name="submit" value="+" {% if not auth.allows_pasting %}disabled{% endif %}/>
+   </div>
 </form>
+<p>
+{% if not auth.authenticated %}
+  <a class="login" href="{{ url_for('login') }}">Sign in using Github</a> first, then give
 {% else %}
-Wild
+  Give
 {% endif %}
+   a link to your favorite talk here. It will be pasted into your <a href="https://gist.github.com/">gist</a> and
+   Gisted irons it like <a href="http://gisted.in/4970352">this</a>.
+</p>
+<hr />
+<p>
+   Gisted supports <a href="http://www.ted.com/">ted.com</a> for now. 
+   Please <a href="https://github.com/omo/gisted/issues">file a bug</a> for blaming or requesting things. <a href="https://github.com/omo">I</a> would appreciate it.
+{% if auth.authenticated %}
+   If you just don't like this and want to leave, <a href="{{ url_for('logout') }}">here for signing out</a>.
+{% endif %}
+</p>
+
+</div>
+
 </body>
 </html>

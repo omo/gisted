@@ -25,16 +25,20 @@ TODO:
  + end-to-end (post the url -> scrape and upload -> redirect)
 
  + cookie encryption
- - unsupported url
- - fail cases
-
+ > styling
+   + index
+   - show
+ > errors
+   - unsupported url
+   - upload fail
+   - download fail
  - improve logging
- - styling
 
  - refactor: extract open-er as a class.
 
 ----
-
+ - put social thing on index.html
+ - add caching
  - favicon
  - adopt markdown parser
 

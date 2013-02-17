@@ -25,7 +25,7 @@ def index():
             return f.abort(403)
         if not auth.allows_pasting:
             return f.abort(403)
-        source = f.request.values["u"]
+        source = f.request.values["u"].strip()
         paster = tools.Paster.make(auth.token)
         paster.paste_from(source)
         return f.redirect(f.url_for("show", id=paster.created_id))
