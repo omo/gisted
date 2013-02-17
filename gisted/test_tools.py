@@ -44,6 +44,8 @@ class FetcherTest(unittest.TestCase):
         self.assertTrue("I want to talk to you today about something" in text)
         self.assertTrue("Thank you for listening." in text)
 
+        md = target.post.to_markdown()
+        self.assertIn("I want to talk to you today about something", md)
 
 class UploaderTest(unittest.TestCase):
     def test_hello(self):
@@ -87,6 +89,7 @@ class PostTest(unittest.TestCase):
         self.assertEquals(target.source_url, "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law")
         self.assertEquals(target.source_hostname, "lessig.tumblr.com")
         self.assertEquals(len(target.paragraphs), 56)
+        self.assertIn("Congratulations to you", target.body)
         markdown = target.to_markdown()
         self.assertIn("----", markdown)
 

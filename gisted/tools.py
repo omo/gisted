@@ -34,15 +34,15 @@ TRANSCRIPT_TEMPLSTE = u"""
 {title}
 {title_deco}
 
-{text}
+{body}
 """
 
 class Post(object):
-    def __init__(self, gist_id, source_url, title, paragraphs):
+    def __init__(self, gist_id, source_url, title, body):
         self.gist_id = gist_id
         self.source_url = source_url
         self.title = title
-        self.paragraphs = paragraphs
+        self.body = body
 
     @property
     def filename(self):
@@ -56,6 +56,10 @@ class Post(object):
     def source_hostname(self):
         return urlparse.urlparse(self.source_url).hostname
 
+    @property
+    def paragraphs(self):
+        return re.split("\n\n+", self.body)
+
     @classmethod
     def parse(cls, gist_id, raw_body):
         head, body = raw_body.split("----")
@@ -68,15 +72,14 @@ class Post(object):
             raise NotFound("Couldn't see the title.")
         title = m.group(1).strip()
         remaining = m.group(3).strip()
-        paras = re.split("\n\n+", remaining)
-        return Post(gist_id, source, title, paras)
+        return Post(gist_id, source, title, remaining)
 
     @classmethod
     def make(cls, source, title, text):
         return cls(None, source, title, text)
 
     def to_markdown(self):
-        return TRANSCRIPT_TEMPLSTE.format(url=self.source_url, title=self.title, title_deco="="*len(self.title), text=self.paragraphs)
+        return TRANSCRIPT_TEMPLSTE.format(url=self.source_url, title=self.title, title_deco="="*len(self.title), body=self.body)
 
 
 # FIXME: Should be fetcher

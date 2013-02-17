@@ -15,8 +15,12 @@ all:
 upload-lessig:
 	./bin/gisteder upload --url "http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law" --title "Commencement Address to Atlanta’s John Marshall Law School" --file data/lessig.md
 
-download-hello:
+download-lessig:
 	./bin/gisteder download --gist 4965816
+
+fetch-shirky:
+	./bin/gisteder fetch --url="http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html"
+
 
 clean:
 	-find gisted -name "*.pyc" | xargs rm

@@ -11,17 +11,20 @@ def upload(options):
     r = u.upload(options.url, options.title, open(options.file).read())
     print r["url"]
 
-def download(options):
-    d = tools.Downloader.make()
-    post = d.get(options.gist)
+def print_post(post):
     print u"gist id: {gist_id}".format(gist_id=post.gist_id)
     print u"title:   {title}".format(title=post.title)
     print u"url:     {url}".format(url=post.source_url)
-    print u"\n\n".join(post.paragraphs)
+    print post.to_markdown()
 
-def extract(options):
-    e = tools.Fetcher(options.url)
-    # TBD
+def download(options):
+    d = tools.Downloader.make()
+    post = d.get(options.gist)
+    print_post(post)
+
+def fetch(options):
+    f = tools.Fetcher(options.url)
+    print_post(f.post)
 
 def parse_args(args):
     parser = optparse.OptionParser()
@@ -45,5 +48,7 @@ def run(args):
         upload(options)
     if "download" == args[1]:
         download(options)
+    if "fetch" == args[1]:
+        fetch(options)
     else:
         die("No such command:" + args[1])
