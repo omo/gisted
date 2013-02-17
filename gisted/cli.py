@@ -20,7 +20,7 @@ def download(options):
     print u"\n\n".join(post.paragraphs)
 
 def extract(options):
-    e = tools.Extractor(urllib2.open(options.url))
+    e = tools.Fetcher(options.url)
     # TBD
 
 def parse_args(args):

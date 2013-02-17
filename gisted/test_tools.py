@@ -26,20 +26,23 @@ def fetch(url):
     return open(filename)
     
     
-class ExtractorTest(unittest.TestCase):
+class FetcherTest(unittest.TestCase):
     def test_hello(self):
-        with fetch("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html") as f:
-            target = gisted.Extractor(f.read())
-            self.assertEquals(target.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")
-            paras = target.transcript_paragraphs
-            self.assertEquals(len(paras), 34)
-            self.assertTrue("I want to talk to you today about something" in paras[0])
-            self.assertTrue("Let's start here." in paras[0])
-            self.assertTrue("Thank you for listening." in paras[-1])
+        class TestingFetcher(gisted.Fetcher):
+            def open(self, req):
+                return fetch(req)
 
-            text = target.transcript_text
-            self.assertTrue("I want to talk to you today about something" in text)
-            self.assertTrue("Thank you for listening." in text)
+        target = TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
+        self.assertEquals(target.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")
+        paras = target.transcript_paragraphs
+        self.assertEquals(len(paras), 34)
+        self.assertTrue("I want to talk to you today about something" in paras[0])
+        self.assertTrue("Let's start here." in paras[0])
+        self.assertTrue("Thank you for listening." in paras[-1])
+
+        text = target.transcript_text
+        self.assertTrue("I want to talk to you today about something" in text)
+        self.assertTrue("Thank you for listening." in text)
 
 
 class UploaderTest(unittest.TestCase):
@@ -141,11 +144,13 @@ class PasterTest(unittest.TestCase):
             def open(self, req):
                 return fake_open(req)
 
-        class TestingPaster(gisted.Paster):
-            uploader_class = TestingUploader
-
+        class TestingFetcher(gisted.Fetcher):
             def open(self, req):
                 return fake_open(req)
+
+        class TestingPaster(gisted.Paster):
+            uploader_class = TestingUploader
+            fetcher_class = TestingFetcher
 
         target = TestingPaster.make("fake_token")
         target.paste_from("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")

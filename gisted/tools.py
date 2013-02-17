@@ -80,18 +80,34 @@ class Post(object):
 
 
 # FIXME: Should be fetcher
-class Extractor(object):
-    def __init__(self, html):
-        self._html = html
-        self._soup = bs4.BeautifulSoup(html, "html5lib")
+class Fetcher(object):
+    def __init__(self, uri):
+        self._uri = uri
+        self._html = None
+        self._soup = None
+
+    def open(self, req):
+        return urllib2.urlopen(req)
+
+    @property
+    def html(self):
+        if not self._html:
+            self._html = self.open(self._uri).read()
+        return self._html
+
+    @property
+    def soup(self):
+        if not self._soup:
+            self._soup = bs4.BeautifulSoup(self.html, "html5lib")
+        return self._soup
 
     @property
     def title(self):
-        return self._soup.title.string
+        return self.soup.title.string
 
     @property
     def transcript_paragraphs(self):
-        lines = self._soup.find_all("a", class_="transcriptLink")
+        lines = self.soup.find_all("a", class_="transcriptLink")
         found_ptags = []
         paragraphs = []
         for line in lines:
@@ -109,8 +125,9 @@ class Extractor(object):
     def transcript_text(self):
         return "\n\n".join(self.transcript_paragraphs)
 
-    def make_post(self, source):
-        return Post.make(source, self.title, self.transcript_text)
+    @property
+    def post(self):
+        return Post.make(self._uri, self.title, self.transcript_text)
 
 
 class GithubClient(object):
@@ -195,7 +212,7 @@ class Downloader(GithubClient):
 
 class Paster(object):
     
-    extractor_class = Extractor
+    fetcher_class = Fetcher
     uploader_class = Uploader
 
     @classmethod
@@ -209,10 +226,8 @@ class Paster(object):
         return urllib2.urlopen(req)
 
     def paste_from(self, source_url):
-        # FIXME: should reject unsupported sites
-        source = self.open(source_url)
-        extractor = self.extractor_class(source.read())
-        return self.up.upload(extractor.make_post(source_url))
+        fetcher = self.fetcher_class(source_url)
+        return self.up.upload(fetcher.post)
         
     @property
     def created_id(self):

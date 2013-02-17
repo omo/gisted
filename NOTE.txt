@@ -21,8 +21,8 @@ TODO:
  + oauth + user
  + user-based request support
  + Stub index page
+ + canary check
  - end-to-end (post the url -> scrape and upload -> redirect)
- - canary
  - styling
  - cookie encryption
  - unsupported url
@@ -35,3 +35,8 @@ TODO:
  - favicon
  - adopt markdown parser
 
+-----
+
+* morth extractor to fetcher
+- investigate fetch behavior (it should be obvious)
+- investigate put behavior by creating debug ui
