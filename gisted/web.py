@@ -2,10 +2,12 @@
 
 import os
 import flask
+import re
 import gisted.tools as tools
 import gisted.conf as conf
 import gisted.session as session
 import flask as f
+import jinja2
 import logging
 
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
@@ -19,6 +21,13 @@ def redirect_index_with_error(error):
     f.flash(error.message, "error")
     return f.redirect(f.url_for("index"))
 
+@app.template_filter('markdown')
+def markdown_filter(text):
+    m = re.search("^\\*(.*)\\*$", text, re.S)
+    if m:
+        mk = jinja2.Markup
+        return mk(u"<em>") + jinja2.escape(m.group(1)) + mk(u"</em>")
+    return text
 
 @app.route('/', methods=["GET", "POST"])
 def index():

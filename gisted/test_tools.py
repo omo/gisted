@@ -27,25 +27,33 @@ def fetch(url):
     
     
 class FetcherTest(unittest.TestCase):
-    def test_hello(self):
-        class TestingFetcher(gisted.Fetcher):
-            def open(self, req):
-                return fetch(req.get_full_url())
+    class TestingFetcher(gisted.Fetcher):
+        def open(self, req):
+            return fetch(req.get_full_url())
 
-        target = TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
-        self.assertEquals(target.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")
-        paras = target.transcript_paragraphs
+    def test_ted_hello(self):
+        target = self.TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
+        self.assertEquals(target.extractor.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")
+        paras = target.extractor.transcript_paragraphs
         self.assertEquals(len(paras), 34)
         self.assertTrue("I want to talk to you today about something" in paras[0])
         self.assertTrue("Let's start here." in paras[0])
         self.assertTrue("Thank you for listening." in paras[-1])
 
-        text = target.transcript_text
+        text = target.extractor.body
         self.assertTrue("I want to talk to you today about something" in text)
         self.assertTrue("Thank you for listening." in text)
 
         md = target.post.to_markdown()
         self.assertIn("I want to talk to you today about something", md)
+
+    def test_infoq_hello(self):
+        target = self.TestingFetcher("http://www.infoq.com/interviews/sadek-drobi-play2-story-new-21")
+        post = target.post
+        paras = post.paragraphs
+        self.assertEquals(35, len(paras))
+        self.assertTrue(paras[0].startswith("*") and paras[0].endswith("*"))
+        
 
 class UploaderTest(unittest.TestCase):
     def test_hello(self):
@@ -65,13 +73,13 @@ class UploaderTest(unittest.TestCase):
         json.loads(u._req.get_data()) # Should be a JSON
         self.assertEquals("xxxx", u.created_id)
 
-        withauth = TestingUploader.make("faketoken")
+        withauth = TestingUploader.make("testtoken")
         ret = withauth.upload(gisted.Post.make("Hello, World!", "Hello?", "http://example.com/"))
         self.assertEquals("https://api.github.com/gists", withauth._req.get_full_url())
         q = urlparse.parse_qs(urlparse.urlparse(withauth._req.get_full_url()).query)
         self.assertNotIn("client_id", q)
         self.assertNotIn("client_secret", q)
-        self.assertEquals("token faketoken", withauth._req.get_header("Authorization"))
+        self.assertEquals("token testtoken", withauth._req.get_header("Authorization"))
 
     def test_make_body(self):
         target = gisted.Uploader.make()
@@ -162,6 +170,6 @@ class PasterTest(unittest.TestCase):
             uploader_class = TestingUploader
             fetcher_class = TestingFetcher
 
-        target = TestingPaster.make("fake_token")
+        target = TestingPaster.make("testtoken")
         target.paste_from("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
         self.assertEquals(target.created_id, "73062b6d882439cfbf14")

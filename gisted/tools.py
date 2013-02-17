@@ -22,6 +22,8 @@ class Invalid(Exception):
     def __init__(self, message):
         super(Invalid, self).__init__(message)  
 
+FAKE_TOKEN = "fake_token_" + conf.credential("flask_secret_key")
+
 TRANSCRIPT_TEMPLSTE = u"""
 
  * From: {url}
@@ -120,37 +122,29 @@ class Post(object):
         return TRANSCRIPT_TEMPLSTE.format(url=self.source_url, title=self.title, title_deco="="*len(self.title), body=self.body)
 
 
-# FIXME: Should be fetcher
-class Fetcher(object):
-    def __init__(self, uri):
-        self._uri = uri
-        self._html = None
-        self._soup = None
+def emphasize(text):
+    return "*" + text + "*"
 
-    def open(self, req):
-        return urllib2.urlopen(req)
-
-    @property
-    def html(self):
-        if not self._html:
-            self._html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read()
-        return self._html
-
-    @property
-    def soup(self):
-        if not self._soup:
-            self._soup = bs4.BeautifulSoup(self.html, "html5lib")
-        return self._soup
+class Extractor(object):
+    def __init__(self, html):
+        self._html = html
+        self._soup = bs4.BeautifulSoup(self._html, "html5lib")
 
     @property
     def title(self):
-        return self.soup.title.string
+        return self._soup.title.string
+
+
+class TedExtractor(Extractor):
+    @classmethod
+    def acceptable(cls, url):
+        return url.startswith("http://www.ted.com/")
 
     @property
     def transcript_paragraphs(self):
-        lines = self.soup.find_all("a", class_="transcriptLink")
+        lines = self._soup.find_all("a", class_="transcriptLink")
         if not lines:
-            raise Invalid("No transcipt... Try other than {url}".format(url=self._uri))
+            raise Invalid("No transcipt... Try other page.")
         found_ptags = []
         paragraphs = []
         for line in lines:
@@ -165,21 +159,84 @@ class Fetcher(object):
         return paragraphs
 
     @property
-    def transcript_text(self):
+    def body(self):
         return "\n\n".join(self.transcript_paragraphs)
+
+
+class InfoqExtractor(Extractor):
+    @classmethod
+    def acceptable(cls, url):
+        return url.startswith("http://www.infoq.com/interviews")
+
+    def _from_dialogue(self, div):
+        ret = []
+        question = u"".join(div.find("span").stripped_strings)
+        # FIXME: should emphasize question
+        ret.append(emphasize(question))
+
+        answer = div.find(class_="answer")
+        for c in answer.children:
+            if isinstance(c, bs4.element.Tag):
+                if c.name == "br":
+                    continue
+                if c.name == "b":
+                    ret.append(emphasize(c.string.strip()))
+                else:
+                    ret.append(c.string.strip())
+            else:
+                ret.append(c.string.strip())
+        return ret
+
+    @property
+    def transcript_paragraphs(self):
+        root = self._soup.find("div", id="intTranscript")
+        if not root:
+            raise Invalid("No transcipt... Try other page.")
+
+        dialogues = root.find_all("div", class_="question") 
+        return reduce(lambda a, i: a + i, [ self._from_dialogue(d) for d in dialogues], [])
+        
+    @property
+    def body(self):
+        return "\n\n".join(self.transcript_paragraphs)
+
+
+# FIXME: Should be fetcher
+class Fetcher(object):
+    extractor_classes = [TedExtractor, InfoqExtractor]
+
+    def __init__(self, uri):
+        self._uri = uri
+        self._extactor = None
+
+    def open(self, req):
+        return urllib2.urlopen(req)
+
+    
+    @property
+    def extractor(self):
+        if not self._extactor:
+            html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read()
+            self._extactor = self._extractor_class_for(self._uri)(html)
+        return self._extactor
 
     @property
     def post(self):
-        return Post.make(self.title, self.transcript_text, self._uri)
+        return Post.make(self.extractor.title, self.extractor.body, self._uri)
+
+    @classmethod
+    def _extractor_class_for(cls, url):
+        found = [ e for e in cls.extractor_classes if e.acceptable(url) ]
+        return found[0] if found else None
 
     @classmethod
     def validate_supported(cls, mayurl):
         u = urlparse.urlparse(mayurl)
         if not (u.scheme and u.hostname):
             raise Invalid("Give me a URL!")
-        if not mayurl.startswith("http://www.ted.com/"):
+        if not cls._extractor_class_for(mayurl):
             raise Invalid("Sorry, but this site is not supported!: {url}".format(url=mayurl))
-
+        
     @classmethod
     def make(cls, url):
         cls.validate_supported(url)
@@ -196,7 +253,7 @@ class GithubClient(object):
 
     def build_request(self, path, data=None):
         url = urlparse.urljoin(self.BASE_URI, path)
-        if self._token:
+        if self._token and self._token != FAKE_TOKEN:
             return urllib2.Request(url, data=data, headers={ "Authorization": "token {t}".format(t=self._token) })
         if "?" not in url:
             url = url + "?"
@@ -349,7 +406,7 @@ class Auth(object):
         self._session["token"] = resp["access_token"]
 
     def fake_login(self):
-        self._session["token"] = "fake_token"
+        self._session["token"] = FAKE_TOKEN
 
     @property
     def token(self):

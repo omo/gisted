@@ -85,6 +85,7 @@ input[name="u"] {
    box-sizing: border-box;
    background-color: transparent;
    padding-left: 0.2em;
+   padding-right: 2em;
 }
 
 input[name="submit"] {
@@ -191,7 +192,7 @@ div.socials {
 <form action="/" method="POST" class="submit">
    <input type="hidden" name="canary" value="{{ auth.canary }}" />
    <div class="submitbox {% if not auth.allows_pasting %}submitbox-disabled{% endif %}">
-     <input spellcheck="no" type="text" name="u" value="" placeholder="http://..." {% if not auth.allows_pasting %}disabled{% else %}autofocus{% endif %}/>
+     <input spellcheck="falsem" type="text" name="u" value="" placeholder="http://..." {% if not auth.allows_pasting %}disabled{% else %}autofocus{% endif %}/>
      <input type="submit" name="submit" value="+" {% if not auth.allows_pasting %}disabled{% endif %}/>
    </div>
 </form>
@@ -206,7 +207,7 @@ div.socials {
 </p>
 <hr />
 <p>
-   Gisted supports <a href="http://www.ted.com/">ted.com</a> for now. 
+   For now, Gisted supports <a href="http://www.ted.com/">TED</a> talks and <a href="http://www.infoq.com/">InfoQ</a> interviews. 
    Please <a href="https://github.com/omo/gisted/issues">file a bug</a> for blaming or requesting things - <a href="https://github.com/omo">I</a> would highly appreciate it.
 {% if auth.authenticated %}
    If you just don't like this and want to leave, here to <a href="{{ url_for('logout') }}">sign out</a>.
