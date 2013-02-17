@@ -115,6 +115,11 @@ class DownloaderTest(unittest.TestCase):
         url = target._find_raw_url(resp)
         self.assertEquals("https://gist.github.com/raw/365370/8c4d2d43d178df44f4c03a7f2ac0ff512853564e/ring.erl", url)
 
+    def test_testshow(self):
+        target = gisted.Downloader.make()
+        post = target.get("testshow")
+        self.assertEquals(post.contributor_name, "octocat")
+
 
 class AuthTest(unittest.TestCase):
     def test_redirect_url(self):

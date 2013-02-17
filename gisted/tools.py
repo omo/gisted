@@ -71,6 +71,22 @@ class Post(object):
         return urlparse.urlparse(u).hostname
 
     @property
+    def contributor_url(self):
+        return self._props.get("By")
+
+    @property
+    def contributor_page_url(self):
+        return "https://github.com/{user}".format(user=self.contributor_name)
+
+    @contributor_url.setter
+    def contributor_url(self, val):
+        self._props["By"] = val
+
+    @property
+    def contributor_name(self):
+        return self.contributor_url.split("/")[-1]
+
+    @property
     def paragraphs(self):
         return re.split("\n\n+", self.body)
 
@@ -228,16 +244,28 @@ class Downloader(GithubClient):
         return files.values()[0]["raw_url"]
 
     def _open(self, req):
+        if (req.get_full_url() == "hello-post.md"):
+            return open(conf.data_path("hello-post.md"))
+        if ("/gists/testshow" in req.get_full_url()):
+            return open(conf.data_path("hello-post.json"))
         return urllib2.urlopen(req)
 
-    def _get_raw_body(self, id):
-        resp = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
-        raw_url = self._find_raw_url(resp)
-        return self._open(raw_url).read().decode('utf-8')
+    def _get_raw_body(self, gist):
+        raw_url = self._find_raw_url(gist)
+        return self._open(urllib2.Request(raw_url)).read().decode('utf-8')
         
+    def _get_contributor_url(self, gist):
+        if not gist.get("user"):
+            return None
+        return gist["user"]["url"]
+
     def get(self, id):
-        body = self._get_raw_body(id) if id != "testshow" else codecs.open(conf.data_path("hello-post.md"), encoding="utf-8").read()
-        return Post.parse(id, body)
+        gist = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
+        body = self._get_raw_body(gist)
+        cont = self._get_contributor_url(gist)
+        post = Post.parse(id, body)
+        post.contributor_url = cont
+        return post
 
 
 class Paster(object):

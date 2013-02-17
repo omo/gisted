@@ -81,8 +81,8 @@ hr.end {
 Pasted from
 <a href="{{ post.source_url }}">{{ post.source_hostname }}</a> to
 <a href="https://gist.github.com/{{ post.gist_id }}">gist:{{ post.gist_id }}</a>
-{% if post.way_url %}
-through <a href="{{ post.way_url }}">{{ post.way_hostname }}</a>
+{% if post.way_url %}through <a href="{{ post.way_url }}">{{ post.way_hostname }}</a>{% endif %}
+{% if post.contributor_url %}by <a href="{{ post.contributor_page_url }}">{{ post.contributor_name }}</a>
 {% endif %}
 .
 </div>
