@@ -1,6 +1,6 @@
 
- * Source: http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law
- * Paster: http://gisted.in/
+ * From: http://lessig.tumblr.com/post/24065401182/commencement-address-to-atlantas-john-marshall-law
+ * Through: http://gisted.in/
 
 ----
 

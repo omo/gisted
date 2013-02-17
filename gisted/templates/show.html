@@ -1,16 +1,90 @@
 <!DOCTYPE html>
 <html>
-<body>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=800" />
+<meta name="description" content="Gisted is a tool to make transcripts like as if it is for reading.">
+<title>{{ post.title }} - Gisted</title>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans|Noticia+Text:400,700' rel='stylesheet' type='text/css'>
+<style>
 
-<div class="nav">
-  <div><a href="{{ post.original_url }}">{{ post.source_hostname }}</a></div>
-  <div><a href="https://gist.github.com/{{ post.gist_id }}">gist</a></div>
-</div>
+body {
+  background-color: white;
+}
+
+.content {
+   width: 80%;
+   max-width: 760px;
+   position: relative;
+   margin-left: auto;
+   margin-right: auto;
+   margin-top: 2em;
+   margin-bottom: 3em;
+}
+
+.content h1 {
+   font-family: "Noticia Text", serif;
+   font-weight: bold;
+   font-size: 32px;
+}
+
+.content p {
+   font-family: "Noticia Text", serif;
+   font-size: 18px;
+   line-height: 30px;
+}
+
+div.note {
+   font-family: "Open Sans", sans-serif;
+   font-size: 14px;
+   background-color: #eee;
+   padding: 0.5em;
+}
+
+div.note a:link,
+div.note a:visited {
+   color: #888;
+   text-decoration: none;
+}
+
+div.note a:hover {
+   text-decoration: underline;
+}
+
+div.title-note { margin-bottom: 2em; }
+div.end-note { margin-top: 2em; }
+
+
+hr.end {
+   width: 40%;
+   border-style: solid;
+   border-color: #888;
+   border-width: 1px;
+   border-style: dashed;
+   margin-top: 2em;
+   margin-bottom: 2em;
+}
+
+</style>
+</head>
+<body>
 <div class="content">
 <h1>{{ post.title }}</h1>
+<div class="note title-note"><a href="{{ post.source_url }}">{{ post.source_url }}</a></div>
+
 {% for p in post.paragraphs %}
 <p>{{ p }}</p>
 {% endfor %}
+
+<div class="note end-note">
+Pasted from
+<a href="{{ post.source_url }}">{{ post.source_hostname }}</a> to
+<a href="https://gist.github.com/{{ post.gist_id }}">gist:{{ post.gist_id }}</a>
+{% if post.way_url %}
+through <a href="{{ post.way_url }}">{{ post.way_hostname }}</a>
+{% endif %}
+.
 </div>
 
 </body>

@@ -26,8 +26,8 @@ class NotFound(Exception):
 
 TRANSCRIPT_TEMPLSTE = u"""
 
- * Source: {url}
- * Paster: http://gisted.in/
+ * From: {url}
+ * Through: http://gisted.in/
 
 ----
 
@@ -38,11 +38,11 @@ TRANSCRIPT_TEMPLSTE = u"""
 """
 
 class Post(object):
-    def __init__(self, gist_id, source_url, title, body):
+    def __init__(self, gist_id, title, body, props):
         self.gist_id = gist_id
-        self.source_url = source_url
         self.title = title
         self.body = body
+        self._props = props
 
     @property
     def filename(self):
@@ -54,8 +54,21 @@ class Post(object):
         return base + ".md"
 
     @property
+    def source_url(self):
+        return self._props.get("From")
+
+    @property
     def source_hostname(self):
         return urlparse.urlparse(self.source_url).hostname
+
+    @property
+    def way_url(self):
+        return self._props.get("Through")
+
+    @property
+    def way_hostname(self):
+        u = self.way_url
+        return urlparse.urlparse(u).hostname
 
     @property
     def paragraphs(self):
@@ -64,20 +77,27 @@ class Post(object):
     @classmethod
     def parse(cls, gist_id, raw_body):
         head, body = raw_body.split("----")
-        m = re.search("\* +Source: *(.*)\n", head)
-        if not m:
-            raise NotFound("Couldn't see the original URL.")
-        source = m.group(1).strip()
+        props = {}
+        for line in head.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            m = re.search("\* +(\w+): *(.*)", line)
+            if not m:
+                raise NotFound("Bad header line: {line}".format(line=line))
+            props[m.group(1)] = m.group(2).strip()
+        if not props.get("From"):
+            raise NotFound("Source URI isn't in the header.")
         m = re.search("([^=]*)(=+)(.*)", body, re.S)
         if not m:
             raise NotFound("Couldn't see the title.")
         title = m.group(1).strip()
         remaining = m.group(3).strip()
-        return Post(gist_id, source, title, remaining)
+        return Post(gist_id, title, remaining, props)
 
     @classmethod
-    def make(cls, source, title, text):
-        return cls(None, source, title, text)
+    def make(cls, title, text, source):
+        return cls(None, title, text, { "From": source })
 
     def to_markdown(self):
         return TRANSCRIPT_TEMPLSTE.format(url=self.source_url, title=self.title, title_deco="="*len(self.title), body=self.body)
@@ -131,7 +151,7 @@ class Fetcher(object):
 
     @property
     def post(self):
-        return Post.make(self._uri, self.title, self.transcript_text)
+        return Post.make(self.title, self.transcript_text, self._uri)
 
 
 class GithubClient(object):
@@ -221,7 +241,6 @@ class Downloader(GithubClient):
 
 
 class Paster(object):
-    
     fetcher_class = Fetcher
     uploader_class = Uploader
 
