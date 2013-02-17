@@ -167,7 +167,9 @@ class Uploader(GithubClient):
             "description": "Gisted: " + post.title,
             "public": True,
             "files": { 
-                post.filename: post.to_markdown()
+                post.filename: {
+                    "content": post.to_markdown()
+                }
             }
         }
 

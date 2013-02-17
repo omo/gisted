@@ -77,8 +77,8 @@ class UploaderTest(unittest.TestCase):
         target = gisted.Uploader.make()
         body = target._make_body(gisted.Post.make("http://example.com/", "Hello, World!", "Hello?"))
         body_dict = json.loads(body)
-        self.assertIn("Hello?", body_dict["files"]["hello-world.md"])
-        self.assertIn("----", body_dict["files"]["hello-world.md"])
+        self.assertIn("Hello?", body_dict["files"]["hello-world.md"]["content"])
+        self.assertIn("----", body_dict["files"]["hello-world.md"]["content"])
 
 
 class PostTest(unittest.TestCase):
