@@ -3,6 +3,7 @@
 import unittest
 import flask
 import bs4
+import urllib
 import gisted.web
 import gisted
 
@@ -41,4 +42,13 @@ class WebTest(unittest.TestCase):
             soup = bs4.BeautifulSoup(resp.data)
             error_notices = soup.find_all("li")
             self.assertEquals(1, len(error_notices))
+
+    def test_index_bookmarklet(self):
+        with self.app as c:
+            self.fake_login()
+            resp = c.get("/?u={u}".format(u=urllib.quote("http://example.com/")))
+            self.assertTrue("200" in resp.status)
+            soup = bs4.BeautifulSoup(resp.data)
+            urlfield = [ i for i in soup.find_all("input") if i["name"] == "u" ][0]
+            self.assertEquals("http://example.com/", urlfield["value"])
 

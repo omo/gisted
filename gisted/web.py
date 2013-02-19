@@ -33,7 +33,8 @@ def markdown_filter(text):
 def index():
     auth = tools.Auth.make(f.session)
     if f.request.method == "GET":
-        return f.render_template("index.html", auth=auth)
+        u = (f.request.values.get("u") or "") if auth.authenticated else ""
+        return f.render_template("index.html", auth=auth, u=u)
     else:
         if auth.canary != f.request.values["canary"]:
             return f.abort(403)
