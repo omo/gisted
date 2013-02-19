@@ -40,11 +40,13 @@ div.note {
    font-size: 14px;
    background-color: #eee;
    padding: 0.5em;
+   color: #888;
 }
+
 
 div.note a:link,
 div.note a:visited {
-   color: #888;
+   color: #111;
    text-decoration: none;
 }
 
@@ -52,7 +54,18 @@ div.note a:hover {
    text-decoration: underline;
 }
 
-div.title-note { margin-bottom: 2em; }
+div.title-note {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space:nowrap;
+    margin-bottom: 2em;
+}
+
+div.title-note a:link,
+div.title-note a:visited {
+   color: #888;
+}
+
 div.end-note { margin-top: 2em; }
 
 em {
