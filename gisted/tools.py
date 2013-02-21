@@ -126,6 +126,8 @@ def emphasize(text):
     return "*" + text + "*"
 
 class Extractor(object):
+    page_encoding = 'utf-8'
+
     def __init__(self, html):
         self._html = html
         self._soup = bs4.BeautifulSoup(self._html, "html5lib")
@@ -216,8 +218,9 @@ class Fetcher(object):
     @property
     def extractor(self):
         if not self._extactor:
-            html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read()
-            self._extactor = self._extractor_class_for(self._uri)(html)
+            ecls = self._extractor_class_for(self._uri)
+            html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read().decode(ecls.page_encoding)
+            self._extactor = ecls(html)
         return self._extactor
 
     @property
