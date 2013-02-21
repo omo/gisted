@@ -274,7 +274,7 @@ class Uploader(GithubClient):
         # See http://developer.github.com/v3/gists/ for the API detail
         body_dict = {
             "description": "Gisted: " + post.title,
-            "public": True,
+            "public": False,
             "files": { 
                 post.filename: {
                     "content": post.to_markdown()
