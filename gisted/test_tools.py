@@ -53,7 +53,11 @@ class FetcherTest(unittest.TestCase):
         paras = post.paragraphs
         self.assertEquals(35, len(paras))
         self.assertTrue(paras[0].startswith("*") and paras[0].endswith("*"))
-        
+
+    def test_infoq_hello_badtags(self):
+        target = self.TestingFetcher("http://www.infoq.com/interviews/erik-meijer-programming-language-design-effects-purity")
+        target.post.paragraphs
+
 
 class UploaderTest(unittest.TestCase):
     def test_hello(self):

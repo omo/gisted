@@ -180,11 +180,11 @@ class InfoqExtractor(Extractor):
                 if c.name == "br":
                     continue
                 if c.name == "b":
-                    ret.append(emphasize(c.string.strip()))
+                    ret.append(emphasize((c.string or "").strip()))
                 else:
-                    ret.append(c.string.strip())
+                    ret.append((c.string or "").strip())
             else:
-                ret.append(c.string.strip())
+                ret.append((c.string or "").strip())
         return ret
 
     @property
