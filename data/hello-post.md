@@ -118,3 +118,7 @@ Not just rich, but just.
 For what the hell is being a lawyer for?
 
 Congratulations to Atlanta’s John Marshall Law School class of 2012. Congratulations to you, and to everyone who got you here.
+
+![slide](http://www.infoq.com/resource/presentations/Type-Functional-Design/en/slides/sl1.jpg)
+
+![slide](http://www.infoq.com/resource/presentations/Type-Functional-Design/en/slides/sl2.jpg)

@@ -58,6 +58,10 @@ class FetcherTest(unittest.TestCase):
         target = self.TestingFetcher("http://www.infoq.com/interviews/erik-meijer-programming-language-design-effects-purity")
         target.post.paragraphs
 
+    def test_infoq_preso(self):
+        target = self.TestingFetcher("http://www.infoq.com/presentations/Type-Functional-Design")
+        self.assertEquals(43, len(target.post.paragraphs))
+
 
 class UploaderTest(unittest.TestCase):
     def test_hello(self):
@@ -102,7 +106,7 @@ class PostTest(unittest.TestCase):
         self.assertEquals(target.source_hostname, "lessig.tumblr.com")
         self.assertEquals(target.way_url, "http://gisted.in/")
         self.assertEquals(target.way_hostname, "gisted.in")
-        self.assertEquals(len(target.paragraphs), 56)
+        self.assertEquals(len(target.paragraphs), 58)
         self.assertIn("Congratulations to you", target.body)
         markdown = target.to_markdown()
         self.assertIn("----", markdown)

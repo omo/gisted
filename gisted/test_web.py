@@ -15,6 +15,9 @@ class WebTest(unittest.TestCase):
     def test_show(self):
         resp = self.app.get("/testshow")
         self.assertTrue("200" in resp.status)
+        soup = bs4.BeautifulSoup(resp.data)
+        slide_images = soup.find_all("img")
+        self.assertEquals(2, len(slide_images))
 
     def test_login(self):
         resp = self.app.get("/login")

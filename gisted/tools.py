@@ -165,7 +165,7 @@ class TedExtractor(Extractor):
         return "\n\n".join(self.transcript_paragraphs)
 
 
-class InfoqExtractor(Extractor):
+class InfoqInterviewExtractor(Extractor):
     @classmethod
     def acceptable(cls, url):
         return url.startswith("http://www.infoq.com/interviews")
@@ -203,9 +203,50 @@ class InfoqExtractor(Extractor):
         return "\n\n".join(self.transcript_paragraphs)
 
 
+class InfoqPresentationExtractor(Extractor):
+    @classmethod
+    def acceptable(cls, url):
+        return url.startswith("http://www.infoq.com/presentations")
+
+    def _from_dialogue(self, div):
+        ret = []
+        question = u"".join(div.find("span").stripped_strings)
+        # FIXME: should emphasize question
+        ret.append(emphasize(question))
+
+        answer = div.find(class_="answer")
+        for c in answer.children:
+            if isinstance(c, bs4.element.Tag):
+                if c.name == "br":
+                    continue
+                if c.name == "b":
+                    ret.append(emphasize((c.string or "").strip()))
+                else:
+                    ret.append((c.string or "").strip())
+            else:
+                ret.append((c.string or "").strip())
+        return ret
+
+    @property
+    def transcript_paragraphs(self):
+        scripts = self._soup.find_all("script")
+        matched = [ s.string for s in scripts if s.string and re.search("var slides", s.string) ]
+        if not matched:
+            raise Invalid("No slide variables... Try other page.")
+        m = re.search("Array\\((.*)\\)", matched[0].string)
+        if not m:
+            raise Invalid("No slides in script... Try other page.")
+        urls = [ re.match("\'(.*)\'", s).group(1) for s in m.group(1).split(",") ]
+        return [ u"![slide](http://www.infoq.com{u})".format(u=u) for u in urls ]
+
+    @property
+    def body(self):
+        return "\n\n".join(self.transcript_paragraphs)
+
+
 # FIXME: Should be fetcher
 class Fetcher(object):
-    extractor_classes = [TedExtractor, InfoqExtractor]
+    extractor_classes = [TedExtractor, InfoqInterviewExtractor, InfoqPresentationExtractor]
 
     def __init__(self, uri):
         self._uri = uri

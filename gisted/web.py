@@ -9,6 +9,7 @@ import gisted.session as session
 import flask as f
 import jinja2
 import logging
+import urlparse
 
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
@@ -23,10 +24,17 @@ def redirect_index_with_error(error):
 
 @app.template_filter('markdown')
 def markdown_filter(text):
+    mk = jinja2.Markup
     m = re.search("^\\*(.*)\\*$", text, re.S)
     if m:
-        mk = jinja2.Markup
         return mk(u"<em>") + jinja2.escape(m.group(1)) + mk(u"</em>")
+    m = re.search("^\\!\\[(.*)\\]\\((.*)\\)$", text, re.S)
+    if m:
+        title = m.group(1)
+        url = m.group(2)
+        if urlparse.urlparse(url).scheme not in [ "http", "https" ]:
+            return text
+        return mk(u"<img class='paragraph-image' src='") + url + mk(u"' title='") + jinja2.escape(title) + mk(u"' />")
     return text
 
 @app.route('/', methods=["GET", "POST"])
