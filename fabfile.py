@@ -28,6 +28,8 @@ def update():
         #virtualenv("npm install")
         #virtualenv("bower install")
         put("confs/api.conf", "confs/api.conf")
+        put("confs/server.key", "confs/server.key")
+        put("confs/gisted_in.crt", "confs/gisted_in.crt")
         run("make clean all")
 
 def reload_daemons():
