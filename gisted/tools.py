@@ -254,7 +254,6 @@ class Fetcher(object):
 
     def open(self, req):
         return urllib2.urlopen(req)
-
     
     @property
     def extractor(self):
@@ -290,10 +289,21 @@ class Fetcher(object):
 class GithubClient(object):
     BASE_URI = "https://api.github.com"
 
+    @classmethod
+    def make(cls, token=None):
+        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
+
     def __init__(self, client_id, client_secret, token):
         self._client_id = client_id
         self._client_secret = client_secret
         self._token = token
+
+    def open(self, req):
+        if (req.get_full_url() == "hello-post.md"):
+            return open(conf.data_path("hello-post.md"))
+        if ("/gists/testshow" in req.get_full_url()):
+            return open(conf.data_path("hello-post.json"))
+        return urllib2.urlopen(req)
 
     def build_request(self, path, data=None):
         url = urlparse.urljoin(self.BASE_URI, path)
@@ -306,14 +316,6 @@ class GithubClient(object):
 
 
 class Uploader(GithubClient):
-    @classmethod
-    def make(cls, token=None):
-        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
-
-    def __init__(self, client_id, client_secret, token=None):
-        super(Uploader, self).__init__(client_id, client_secret, token)
-
-
     def _make_body(self, post):
         # See http://developer.github.com/v3/gists/ for the API detail
         body_dict = {
@@ -327,9 +329,6 @@ class Uploader(GithubClient):
         }
 
         return json.dumps(body_dict)
-
-    def open(self, req):
-        return urllib2.urlopen(req)
 
     def upload(self, post):
         resp = self.open(self.build_request("/gists", data=self._make_body(post)))
@@ -347,29 +346,15 @@ class Uploader(GithubClient):
 
         
 class Downloader(GithubClient):
-    @classmethod
-    def make(cls, token=None):
-        return cls(conf.credential("github_client_id"), conf.credential("github_client_secret"), token)
-
-    def __init__(self, client_id, client_secret, token=None):
-        super(Downloader, self).__init__(client_id, client_secret, token)
-
     def _find_raw_url(self, resp):
         files = resp["files"]
         if not len(files):
             raise NotFound("No files are included")
         return files.values()[0]["raw_url"]
 
-    def _open(self, req):
-        if (req.get_full_url() == "hello-post.md"):
-            return open(conf.data_path("hello-post.md"))
-        if ("/gists/testshow" in req.get_full_url()):
-            return open(conf.data_path("hello-post.json"))
-        return urllib2.urlopen(req)
-
     def _get_raw_body(self, gist):
         raw_url = self._find_raw_url(gist)
-        return self._open(urllib2.Request(raw_url)).read().decode('utf-8')
+        return self.open(urllib2.Request(raw_url)).read().decode('utf-8')
         
     def _get_contributor_url(self, gist):
         if not gist.get("user"):
@@ -378,7 +363,7 @@ class Downloader(GithubClient):
 
     def get(self, id):
         try:
-            gist = json.load(self._open(self.build_request("/gists/{id}".format(id=id))))
+            gist = json.load(self.open(self.build_request("/gists/{id}".format(id=id))))
             body = self._get_raw_body(gist)
             cont = self._get_contributor_url(gist)
             post = Post.parse(id, body)
@@ -387,7 +372,6 @@ class Downloader(GithubClient):
         except urllib2.HTTPError, e:
             # XXX: Should be logged
             raise Invalid("An error occured on a remote API call...: gist:{id}".format(id=id))
-
 
 
 class Paster(object):
@@ -452,9 +436,28 @@ class Auth(object):
     def fake_login(self):
         self._session["token"] = FAKE_TOKEN
 
+    def get_current_user(self):
+        cli = GithubClient.make(self.token)
+        return json.load(cli.open(cli.build_request("/user")))
+
+    @property
+    def is_admin_user(self):
+        if not self.token:
+            return False
+        user = self.get_current_user()
+        return user["login"] == u"omo"
+
     @property
     def token(self):
         return self._session.get("token")
+
+    @property
+    def token_if_admin(self):
+        return self.token if self.is_admin_user else None
+
+    @token.setter
+    def token(self, val):
+        self._session["token"] = val
 
     @property
     def authenticated(self):

@@ -22,6 +22,11 @@ def redirect_index_with_error(error):
     f.flash(error.message, "error")
     return f.redirect(f.url_for("index"))
 
+def redirect_to_secure(url):
+    print url
+    urlparse.urlparse(url)
+    return f.redirect(url)
+
 @app.template_filter('markdown')
 def markdown_filter(text):
     mk = jinja2.Markup
@@ -52,7 +57,7 @@ def index():
         try:
             source = f.request.values["u"].strip()
             paster.paste_from(source)
-            return f.redirect(f.url_for("show", id=paster.created_id))
+            return redirect_to_secure(f.url_for("show", id=paster.created_id))
         except tools.Invalid, e:
             return redirect_index_with_error(e)
 
@@ -79,6 +84,21 @@ if conf.enable_debug_pages:
             u = tools.Uploader.make(auth.token)
             u.upload(post)
             return "<a href='{url}'>{id}</a>".format(url=u.created_page_url, id=u.created_id)
+
+@app.route('/debug_token', methods=["GET", "POST"])
+def debug_token():
+    auth = tools.Auth.make(f.session)
+    if not conf.enable_debug_pages and not auth.is_admin_user:
+        return f.abort(403)
+
+    if f.request.method == "GET":
+        return f.render_template("debug_token.html", auth=auth)
+    else:
+        if auth.canary != f.request.values["canary"]:
+            return f.abort(403)
+        auth.token = f.request.values["token"]
+        return f.redirect(f.url_for("index"))
+
 
 @app.route('/favicon.ico')
 def favicon():
