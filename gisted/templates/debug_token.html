@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="{{ url_for('debug_token') }}" method="POST">
+  <input type="hidden" name="canary" value="{{ auth.canary }}" />
+<ul>
+  <li>Token: <input type="text" name="token" value="{{ auth.token }}" /> </li>
+</ul>
+<input type="submit" />
+</form>
+
+</body>
+</html>
