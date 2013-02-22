@@ -5,6 +5,8 @@ log
 .testdata
 confs/api.conf
 confs/s3cmd.conf
+confs/gisted_in.crt
+confs/server.key
 components
 node_modules
 public/stylesheets

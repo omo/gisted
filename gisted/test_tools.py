@@ -59,9 +59,10 @@ class FetcherTest(unittest.TestCase):
         target.post.paragraphs
 
     def test_infoq_preso(self):
-        target = self.TestingFetcher("http://www.infoq.com/presentations/Type-Functional-Design")
+        u = "http://www.infoq.com/presentations/Type-Functional-Design"
+        self.TestingFetcher.validate_supported(u)
+        target = self.TestingFetcher(u)
         self.assertEquals(43, len(target.post.paragraphs))
-
 
 class UploaderTest(unittest.TestCase):
     def test_hello(self):
