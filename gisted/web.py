@@ -39,7 +39,10 @@ def markdown_filter(text):
         url = m.group(2)
         if urlparse.urlparse(url).scheme not in [ "http", "https" ]:
             return text
-        return mk(u"<img class='paragraph-image' src='") + url + mk(u"' title='") + jinja2.escape(title) + mk(u"' />")
+        if url.endswith("swf"):
+            return mk(u"<embed class='paragraph-image' src='") + jinja2.escape(url) + mk(u"' ><embed>")
+        else:
+            return mk(u"<img class='paragraph-image' src='") + jinja2.escape(url) + mk(u"' title='") + jinja2.escape(title) + mk(u"' />")
     return text
 
 @app.route('/', methods=["GET", "POST"])
