@@ -23,7 +23,6 @@ def redirect_index_with_error(error):
     return f.redirect(f.url_for("index"))
 
 def redirect_to_secure(url):
-    print url
     urlparse.urlparse(url)
     return f.redirect(url)
 
