@@ -131,7 +131,7 @@ def login():
 def logback():
     auth = tools.Auth.make(f.session)
     auth.did_come_back(f.request.values)
-    return f.redirect("/")
+    return f.redirect(auth.redirect_uri)
 
 @app.route('/logout')
 def logout():
