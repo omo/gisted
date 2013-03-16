@@ -141,10 +141,11 @@ class DownloaderTest(unittest.TestCase):
 class AuthTest(unittest.TestCase):
     def test_redirect_url(self):
         auth = gisted.Auth.make({})
-        u = urlparse.urlparse(auth.redirect_url)
+        u = urlparse.urlparse(auth.make_redirect_url("http://gisted.in/hoge"))
         q = urlparse.parse_qs(u.query)
         self.assertTrue("None" != q["client_id"][0])
         self.assertTrue("None" != q["state"][0])
+        self.assertTrue("None" != q["redirect_uri"][0])
 
     def test_did_come_back(self):
         class TestAuth(gisted.Auth):
@@ -153,8 +154,8 @@ class AuthTest(unittest.TestCase):
                 return StringIO.StringIO(json.dumps({ "access_token": "mytoken" }))
 
         auth = TestAuth.make({})
-        auth.did_come_back({ "code": "mycode", "state": auth.canary })
-
+        auth.did_come_back({ "code": "mycode", "state": auth.canary, "redirect_uri": "http://gisted.in/hoge" })
+        self.assertEquals(auth.redirect_uri, "http://gisted.in/hoge")
 
 class PasterTest(unittest.TestCase):
     def test_hello(self):

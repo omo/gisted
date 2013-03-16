@@ -413,6 +413,7 @@ class Auth(object):
         self.client_secret = client_secret
         self._session = session
         self.allows_anonymous = False
+        self.redirect_uri = None
 
     def open(self, req):
         return urllib2.urlopen(req)
@@ -420,7 +421,8 @@ class Auth(object):
     def did_come_back(self, args):
         code = args["code"]
         state = args["state"]
-        if self.canary != state:
+        redirect_uri = self.redirect_uri = args["redirect_uri"]
+        if self.canary != state or not redirect_uri:
             return False
 
         post_url = "https://github.com/login/oauth/access_token"
@@ -432,6 +434,7 @@ class Auth(object):
         req = urllib2.Request(post_url, post_data, headers={"Accept": "application/json"})
         resp = json.load(self.open(req))
         self._session["token"] = resp["access_token"]
+        self.redirect_uri = redirect_uri
 
     def fake_login(self):
         self._session["token"] = FAKE_TOKEN
@@ -473,8 +476,9 @@ class Auth(object):
             self._session["canary"] = random_string()
         return self._session["canary"]
 
-    @property
-    def redirect_url(self):
-        params = { "c": self.client_id, 
-                   "s": self.canary }
-        return "https://github.com/login/oauth/authorize?scope=gist&client_id={c}&state={s}".format(**params)
+    def make_redirect_url(self, destination):
+        params = { "scope": "gist",
+                   "client_id": self.client_id, 
+                   "redirect_uri": destination,
+                   "state": self.canary }
+        return "https://github.com/login/oauth/authorize?" + urllib.urlencode(params)

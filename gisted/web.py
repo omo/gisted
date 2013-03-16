@@ -60,8 +60,6 @@ def index():
         maybe_id = to_gist_id_from_url_if_possible(u)
         if maybe_id:
             return redirect_to_secure(f.url_for("show", id=maybe_id))
-        if not auth.authenticated:
-            u = ""
         return f.render_template("index.html", auth=auth, u=u)
     else:
         if auth.canary != f.request.values["canary"]:
@@ -127,7 +125,7 @@ def favicon():
 #
 @app.route('/login')
 def login():
-    return f.redirect(tools.Auth.make(f.session).redirect_url)
+    return f.redirect(tools.Auth.make(f.session).make_redirect_url(f.request.referrer))
 
 @app.route('/logback')
 def logback():
