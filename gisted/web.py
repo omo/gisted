@@ -26,6 +26,14 @@ def redirect_to_secure(url):
     urlparse.urlparse(url)
     return f.redirect(url)
 
+def to_gist_id_from_url_if_possible(url):
+    if not url:
+        return None
+    m = re.match("https://gist.github.com/[^/]+/([a-zA-Z0-9]+)", url)
+    if not m:
+        return None
+    return m.group(1)
+
 @app.template_filter('markdown')
 def markdown_filter(text):
     mk = jinja2.Markup
@@ -55,9 +63,12 @@ def index():
             return f.abort(403)
         if not auth.allows_pasting:
             return f.abort(403)
-        paster = tools.Paster.make(auth.token)
         try:
             source = f.request.values["u"].strip()
+            maybe_id = to_gist_id_from_url_if_possible(source)
+            if maybe_id:
+                return redirect_to_secure(f.url_for("show", id=maybe_id))
+            paster = tools.Paster.make(auth.token)
             paster.paste_from(source)
             return redirect_to_secure(f.url_for("show", id=paster.created_id))
         except tools.Invalid, e:
