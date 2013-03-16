@@ -4,6 +4,7 @@ import os.path
 import StringIO
 import unittest
 import base64
+import urllib
 import urllib2
 import urlparse
 import json
@@ -154,7 +155,8 @@ class AuthTest(unittest.TestCase):
                 return StringIO.StringIO(json.dumps({ "access_token": "mytoken" }))
 
         auth = TestAuth.make({})
-        auth.did_come_back({ "code": "mycode", "state": auth.canary, "redirect_uri": "http://gisted.in/hoge" })
+        ret = auth.did_come_back({ "code": "mycode", "state": auth.canary, "u": "http://gisted.in/hoge" })
+        self.assertTrue(ret)
         self.assertEquals(auth.redirect_uri, "http://gisted.in/hoge")
 
 class PasterTest(unittest.TestCase):

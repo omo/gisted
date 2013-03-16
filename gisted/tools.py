@@ -418,11 +418,11 @@ class Auth(object):
     def open(self, req):
         return urllib2.urlopen(req)
 
-    def did_come_back(self, args):
-        code = args["code"]
-        state = args["state"]
-        redirect_uri = self.redirect_uri = args["redirect_uri"]
-        if self.canary != state or not redirect_uri:
+    def did_come_back(self, values):
+        code = values.get("code")
+        state = values.get("state")
+        redirect_uri = values.get("u")
+        if (self.canary != state) or (not redirect_uri) or (not redirect_uri.startswith("http://gisted.in/")):
             return False
 
         post_url = "https://github.com/login/oauth/access_token"
@@ -435,6 +435,7 @@ class Auth(object):
         resp = json.load(self.open(req))
         self._session["token"] = resp["access_token"]
         self.redirect_uri = redirect_uri
+        return True
 
     def fake_login(self):
         self._session["token"] = FAKE_TOKEN
@@ -479,6 +480,6 @@ class Auth(object):
     def make_redirect_url(self, destination):
         params = { "scope": "gist",
                    "client_id": self.client_id, 
-                   "redirect_uri": destination,
+                   "redirect_uri": "http://gisted.in/logback?" + urllib.urlencode({ "u": destination }),
                    "state": self.canary }
         return "https://github.com/login/oauth/authorize?" + urllib.urlencode(params)
