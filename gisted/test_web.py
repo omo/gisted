@@ -57,6 +57,12 @@ class WebTest(unittest.TestCase):
             self.assertTrue("302" in resp.status)
             self.assertEquals("http://localhost/5658d118aaac9e0da3d1", resp.headers["Location"])
 
+    def test_get_gist_bookmarklet(self):
+        with self.app as c:
+            resp = c.get("/?u={u}".format(u=urllib.quote("https://gist.github.com/omo/5658d118aaac9e0da3d1")))
+            self.assertTrue("302" in resp.status)
+            self.assertEquals("http://localhost/5658d118aaac9e0da3d1", resp.headers["Location"])
+
     def test_index_bookmarklet(self):
         with self.app as c:
             self.fake_login()
