@@ -19,7 +19,7 @@ download-lessig:
 	./bin/gisteder download --gist 4965816
 
 fetch-shirky:
-	./bin/gisteder fetch --url="http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html"
+	./bin/gisteder fetch --url="http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government"
 
 
 clean:

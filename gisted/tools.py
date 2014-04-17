@@ -132,6 +132,10 @@ class Extractor(object):
         self._html = html
         self._soup = bs4.BeautifulSoup(self._html, "html5lib")
 
+    @classmethod
+    def transcript_url_for(cls, url):
+        return url
+
     @property
     def title(self):
         return self._soup.title.string
@@ -140,24 +144,19 @@ class Extractor(object):
 class TedExtractor(Extractor):
     @classmethod
     def acceptable(cls, url):
-        return url.startswith("http://www.ted.com/")
+        return url.startswith("http://www.ted.com/talks")
+
+    @classmethod
+    def transcript_url_for(cls, url):
+        return url + "/transcript"
 
     @property
     def transcript_paragraphs(self):
-        lines = self._soup.find_all("a", class_="transcriptLink")
-        if not lines:
-            raise Invalid("No transcipt... Try other page.")
-        found_ptags = []
         paragraphs = []
-        for line in lines:
-            text = line.string
-            p = line.parent
-            try:
-                i = found_ptags.index(p)
-                paragraphs[i] = paragraphs[i] + " " + text
-            except ValueError:
-                found_ptags.append(p)
-                paragraphs.append(text)
+        rawparas = self._soup.find_all("p", class_="talk-transcript__para")
+        for p in rawparas:
+            frags = p.find_all("span", class_="talk-transcript__fragment")
+            paragraphs.append(" ".join([f.string for f in frags]))
         return paragraphs
 
     @property
@@ -259,7 +258,8 @@ class Fetcher(object):
     def extractor(self):
         if not self._extactor:
             ecls = self._extractor_class_for(self._uri)
-            html = self.open(urllib2.Request(self._uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read().decode(ecls.page_encoding)
+            uri = ecls.transcript_url_for(self._uri)
+            html = self.open(urllib2.Request(uri, headers={ "User-Agent": "Gisted http://gisted.in/" })).read().decode(ecls.page_encoding)
             self._extactor = ecls(html)
         return self._extactor
 

@@ -25,16 +25,30 @@ def fetch(url):
         with open(filename, "w") as f:
             f.write(resp.read())
     return open(filename)
-    
-    
+
+class ExtractorTest(unittest.TestCase):
+
+    def test_infoq_transcript_url_for(self):
+        original = "http://www.infoq.com/interviews/sadek-drobi-play2-story-new-21"
+        actual = gisted.tools.InfoqInterviewExtractor.transcript_url_for(original)
+        expected = original
+        self.assertEquals(actual, expected)
+
+    def test_ted_transcript_url_for(self):
+        original = "http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government"
+        expected = "http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government/transcript"
+        actual = gisted.tools.TedExtractor.transcript_url_for(original)
+        self.assertEquals(actual, expected)
+
+
 class FetcherTest(unittest.TestCase):
     class TestingFetcher(gisted.Fetcher):
         def open(self, req):
             return fetch(req.get_full_url())
 
     def test_ted_hello(self):
-        target = self.TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government.html")
-        self.assertEquals(target.extractor.title, "Clay Shirky: How the Internet will (one day) transform government | Video on TED.com")
+        target = self.TestingFetcher("http://www.ted.com/talks/clay_shirky_how_the_internet_will_one_day_transform_government")
+        self.assertEquals(target.extractor.title, "Clay Shirky: How the Internet will (one day) transform government | Transcript | TED.com")
         paras = target.extractor.transcript_paragraphs
         self.assertEquals(len(paras), 34)
         self.assertTrue("I want to talk to you today about something" in paras[0])
