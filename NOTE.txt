@@ -1,5 +1,18 @@
 
 
+Setup (for Mac):
+
+ * $sudo easy_install pip
+ * $sudo pip install virtualenv
+ * $virtualenv venv
+ * $curl https://raw.github.com/creationix/nvm/v0.4.0/install.sh | sh # Should be used the latest ver. See: https://github.com/creationix/nvm
+ * $nvm install 0.10
+ * $make install
+   * Avoid compilation error somehow: http://stackoverflow.com/questions/22703393/clang-error-unknown-argument-mno-fused-madd-wunused-command-line-argumen
+ * Setup SSH key http://stackoverflow.com/questions/5069895/connecting-to-ec2-using-keypair-pem-file-via-fabric
+
+-----
+
 TODO:
 
  + stub flask stack

@@ -30,6 +30,9 @@ clean:
 #
 freeze: ${PIP_REQUIREMENT}
 
+install:
+	. ./bin/activate && pip install  --upgrade -r ${PIP_REQUIREMENT}
+
 ${PIP_REQUIREMENT}:
 	. ./bin/activate && pip freeze > $@
 
@@ -42,4 +45,4 @@ reload:
 init_app:
 	. ./bin/activate && fab -H gisted.in -u ubuntu init_app
 
-.PHONY: ${PIP_REQUIREMENT} deploy run clean test all fetch-shirky download-lessig upload-lessig
+.PHONY: ${PIP_REQUIREMENT} deploy run clean test all fetch-shirky download-lessig upload-lessig install

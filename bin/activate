@@ -3,7 +3,7 @@
 
 if [ ! -z "$NVM_DIR" ]; then
    . $NVM_DIR/nvm.sh
-   nvm use v0.8.14
+   nvm use v0.10
 fi
 
 HERE=`pwd`
