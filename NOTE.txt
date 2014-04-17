@@ -10,6 +10,7 @@ Setup (for Mac):
  * $make install
    * Avoid compilation error somehow: http://stackoverflow.com/questions/22703393/clang-error-unknown-argument-mno-fused-madd-wunused-command-line-argumen
  * Setup SSH key http://stackoverflow.com/questions/5069895/connecting-to-ec2-using-keypair-pem-file-via-fabric
+ * Copy SSH key to confs/
 
 -----
 

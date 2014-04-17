@@ -7,6 +7,7 @@ confs/api.conf
 confs/s3cmd.conf
 confs/gisted_in.crt
 confs/server.key
+confs/server.csr
 components
 node_modules
 public/stylesheets
