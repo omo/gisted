@@ -148,6 +148,11 @@ class TedExtractor(Extractor):
 
     @classmethod
     def transcript_url_for(cls, url):
+        u = urlparse.urlparse(url)
+        if u.query:
+            lang = urlparse.parse_qs(u.query, strict_parsing=True).get("language")
+            if lang:
+                return urlparse.urljoin(url, u.path + "/transcript?lang=" + lang[0])
         return url + "/transcript"
 
     @property
