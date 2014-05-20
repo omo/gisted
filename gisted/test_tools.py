@@ -19,7 +19,8 @@ if not os.path.exists(TESTDATA_DIR):
 
 
 def fetch(url):
-    filename = os.path.join(TESTDATA_DIR, base64.b64encode(url))
+    # FIXME: Quick hack not to have the filename contain slashes
+    filename = os.path.join(TESTDATA_DIR, base64.b64encode(url)).replace('/', '_')
     if not os.path.exists(filename):
         resp = urllib2.urlopen(url)
         with open(filename, "w") as f:
@@ -61,6 +62,16 @@ class FetcherTest(unittest.TestCase):
 
         md = target.post.to_markdown()
         self.assertIn("I want to talk to you today about something", md)
+
+    def test_ted_lang(self):
+        target = self.TestingFetcher("http://www.ted.com/talks/ken_robinson_says_schools_kill_creativity?language=ja")
+        self.assertEquals(target.extractor.title, "Ken Robinson: How schools kill creativity | Transcript | TED.com")
+        paras = target.extractor.transcript_paragraphs
+        self.assertEquals(len(paras), 19)
+        self.assertTrue(u"\u304a\u306f\u3088\u3046\u3054\u3056\u3044\u307e\u3059\u3002\u6c17\u5206\u306f\u3044\u304b\u304c\u3067\u3059\u304b\uff1f\u7d20\u6674\u3089\u3057\u3044\u3067\u3059\u306d\u3001\u3053\u3053\u306f" in paras[0])
+
+        md = target.post.to_markdown()
+        self.assertIn(u"\u304a\u306f\u3088\u3046\u3054\u3056\u3044\u307e\u3059\u3002\u6c17\u5206\u306f\u3044\u304b\u304c\u3067\u3059\u304b\uff1f\u7d20\u6674\u3089\u3057\u3044\u3067\u3059\u306d\u3001\u3053\u3053\u306f", md)
 
     def test_infoq_hello(self):
         target = self.TestingFetcher("http://www.infoq.com/interviews/sadek-drobi-play2-story-new-21")
