@@ -1,6 +1,6 @@
 
 PIP_REQUIREMENT = "requirements.txt"
-TEST_OPTIONS    = ""
+TEST_OPTIONS   ?= ""
 
 run:
 	. ./bin/activate && python web.py
